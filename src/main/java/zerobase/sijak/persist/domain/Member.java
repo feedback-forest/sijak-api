@@ -53,9 +53,11 @@ public class Member {
     private LocalDateTime birth;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
 
