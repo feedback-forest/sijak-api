@@ -2,10 +2,16 @@ package zerobase.sijak.persist.domain;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
 public class Review {
 
     @Id
@@ -14,12 +20,12 @@ public class Review {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id")
-    private  Class classes;
+    @JoinColumn(name = "lecture_id")
+    private Lecture lecture;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     private String content;
 

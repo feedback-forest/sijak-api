@@ -41,3 +41,4 @@ application.properties
 application.yml
 *.png
 *.jpg
+*.sql

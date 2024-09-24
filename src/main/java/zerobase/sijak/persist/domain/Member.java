@@ -1,6 +1,9 @@
 package zerobase.sijak.persist.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -9,12 +12,14 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor
-@Table(name = "USERS")
-public class User {
+@AllArgsConstructor
+@Builder
+@Getter
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "member_id")
     private Integer id;
 
     @Column(name = "kakao_user_id", unique = true, nullable = false)
@@ -47,10 +52,10 @@ public class User {
     @Column(name = "birth")
     private LocalDateTime birth;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Heart> hearts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
 
 

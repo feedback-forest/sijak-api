@@ -7,7 +7,7 @@ import zerobase.sijak.dto.kakao.UserLoginRequestDTO;
 import zerobase.sijak.jwt.KakaoUserService;
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("/sijak")
 @RequiredArgsConstructor
 public class TokenController {
 
@@ -32,4 +32,18 @@ public class TokenController {
         return "ssssss";
     }
 
+    @GetMapping("/home")
+    public String home() {
+        return "home";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @GetMapping("/class/{id}/apply")
+    public String apply(@PathVariable int id) {
+        return "apply" + id;
+    }
 }

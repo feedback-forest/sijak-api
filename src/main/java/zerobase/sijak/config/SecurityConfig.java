@@ -17,64 +17,70 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import zerobase.sijak.jwt.JwtAuthenticationFilter;
 import zerobase.sijak.jwt.JwtTokenProvider;
 
-//@Configuration
-//@EnableWebSecurity
-//@RequiredArgsConstructor
-//public class SecurityConfig {
-//    private final JwtTokenProvider jwtTokenProvider;
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//    }
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(
-//                        managementConfigurer -> managementConfigurer
-//                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )
-//                .authorizeHttpRequests(
-//                        requestMatcherRegistry -> requestMatcherRegistry
-//                                .dispatcherTypeMatchers(DispatcherType.FORWARD)
-//                                .permitAll()
-//                                .requestMatchers("/**").permitAll()
-//                                .requestMatchers("/members/login").permitAll()
-//                                .requestMatchers("/members/test").hasRole("USER")
-//                                .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-//        return httpSecurity.build();
-//    }
-//}
-
+@Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Configuration
 public class SecurityConfig {
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(Customizer.withDefaults());
-
-        http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
-                SessionCreationPolicy.STATELESS));
-
-        http.formLogin(AbstractHttpConfigurer::disable);
-        http.httpBasic(AbstractHttpConfigurer::disable);
-
-
-        return http.build();
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(
+                        managementConfigurer -> managementConfigurer
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(
+                        requestMatcherRegistry -> requestMatcherRegistry
+                                .dispatcherTypeMatchers(DispatcherType.FORWARD)
+                                .permitAll()
+                                .requestMatchers("/img/**").permitAll()
+                                .requestMatchers("/css/**").permitAll()
+                                .requestMatchers("/js/**").permitAll()
+                                .requestMatchers("/").permitAll()
+                                .requestMatchers("/sijak/home").permitAll()
+                                .requestMatchers("/sijak/login").permitAll()
+                                .requestMatchers("/sijak/class/{id}").permitAll()
+                                .requestMatchers("/sijak/class/{id}/apply").hasRole("USER")
+                                .requestMatchers("/sijak/test").hasRole("USER")
+                                .anyRequest().authenticated()
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        return httpSecurity.build();
     }
-
 }
+
+//@EnableWebSecurity
+//@RequiredArgsConstructor
+//@Configuration
+//public class SecurityConfig {
+//
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+//
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//
+//        http.csrf(AbstractHttpConfigurer::disable);
+//        http.cors(Customizer.withDefaults());
+//
+//        http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
+//                SessionCreationPolicy.STATELESS));
+//
+//        http.formLogin(AbstractHttpConfigurer::disable);
+//        http.httpBasic(AbstractHttpConfigurer::disable);
+//
+//
+//        return http.build();
+//    }
+//
+//}
