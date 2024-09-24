@@ -42,3 +42,5 @@ application.yml
 *.png
 *.jpg
 *.sql
+*.xml
+*.log

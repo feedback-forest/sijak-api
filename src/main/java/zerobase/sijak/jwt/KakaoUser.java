@@ -26,11 +26,15 @@ public class KakaoUser implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "kakao_user_id")
     private Long kakaoUserId;
 
     private String nickname;
 
+    @Column(name = "profile_image_url")
     private String profileImageUrl;
+
+    private String birth;
 
     private String name;
 
@@ -38,15 +42,11 @@ public class KakaoUser implements UserDetails {
 
     private String gender;
 
+    @Column(name = "age_range")
     private String ageRange;
 
-    private String appliedClass;
-
-    private String latitude;
-
-    private String longitude;
-
     @Enumerated(EnumType.STRING)
+    @Column(name = "social_type")
     private final SocialType socialType = SocialType.KAKAO;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -58,13 +58,11 @@ public class KakaoUser implements UserDetails {
         this.kakaoUserId = kakaoUserInfo.getKakaoUserId();
         this.nickname = kakaoUserInfo.getNickname();
         this.profileImageUrl = kakaoUserInfo.getProfileImageUrl();
+        this.birth = kakaoUserInfo.getBirth();
         this.name = kakaoUserInfo.getName();
         this.email = kakaoUserInfo.getEmail();
         this.gender = kakaoUserInfo.getGender();
         this.ageRange = kakaoUserInfo.getAgeRange();
-        this.appliedClass = kakaoUserInfo.getAppliedClass();
-        this.latitude = kakaoUserInfo.getLatitude();
-        this.longitude = kakaoUserInfo.getLongitude();
     }
 
     @Override

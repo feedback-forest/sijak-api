@@ -22,28 +22,4 @@ public class TokenController {
         return tokenDTO;
     }
 
-    @GetMapping("/test")
-    public String test1() {
-        return "success";
-    }
-
-    @PostMapping("/test")
-    public String test2() {
-        return "ssssss";
-    }
-
-    @GetMapping("/home")
-    public String home() {
-        return "home";
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-
-    @GetMapping("/class/{id}/apply")
-    public String apply(@PathVariable int id) {
-        return "apply" + id;
-    }
 }

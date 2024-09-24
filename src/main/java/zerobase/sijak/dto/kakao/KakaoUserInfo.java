@@ -1,5 +1,6 @@
 package zerobase.sijak.dto.kakao;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +12,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class KakaoUserInfo {
 
+    @JsonProperty("kakao_user_id")
     private Long kakaoUserId;
 
     private String nickname;
 
+    @JsonProperty("profile_image_url")
     private String profileImageUrl;
+
+    private String birth;
 
     private String name;
 
@@ -23,11 +28,7 @@ public class KakaoUserInfo {
 
     private String gender;
 
+    @JsonProperty("age_range")
     private String ageRange;
 
-    private String appliedClass;
-
-    private String latitude;
-
-    private String longitude;
 }

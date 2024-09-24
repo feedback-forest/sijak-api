@@ -11,6 +11,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
 import zerobase.sijak.persist.domain.Career;
 import zerobase.sijak.persist.domain.Image;
@@ -27,6 +28,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class SongpaScrapService {
 
     private final LectureRepository lectureRepository;
@@ -75,6 +77,8 @@ public class SongpaScrapService {
                 WebElement row = rows.get(i);
 
                 List<WebElement> cols = row.findElements(By.tagName("td"));
+                if (alreadySavedUserJudge(cols.get(1).findElement(By.tagName("a")).getAttribute("href")
+                        , cols.get(cols.size() - 1).getText())) continue;
                 if (cols.get(cols.size() - 1).getText().equals("마감")) continue;
 
                 System.out.println("2222");
@@ -207,5 +211,18 @@ public class SongpaScrapService {
         driver.close();
         driver.quit();
         Thread.sleep(3000);
+    }
+
+    private boolean alreadySavedUserJudge(String link, String lectureStatus) {
+        Lecture lecture = lectureRepository.findByName(link);
+
+        if (lecture == null) return false;
+        else if (lecture.getStatus().equals("N")) return true;
+        else if (lecture.getStatus().equals("P") && lectureStatus.equals("마감")) {
+            lecture.setStatus("N");
+            lectureRepository.save(lecture);
+            return true;
+        }
+        return true;
     }
 }
