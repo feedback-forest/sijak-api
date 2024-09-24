@@ -10,7 +10,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
 import zerobase.sijak.persist.domain.Career;
 import zerobase.sijak.persist.domain.Image;
@@ -30,6 +32,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class GangseoScrapService {
 
     private final LectureRepository lectureRepository;
@@ -37,7 +40,7 @@ public class GangseoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    // @Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "";
@@ -76,6 +79,8 @@ public class GangseoScrapService {
                 WebElement row = rows.get(i);
 
                 List<WebElement> cols = row.findElements(By.tagName("td"));
+                if (alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
+                        , cols.get(cols.size() - 1).getText())) continue;
                 if (!cols.get(cols.size() - 1).getText().equals("수강신청")) continue;
 
                 System.out.println("2222");
@@ -108,7 +113,8 @@ public class GangseoScrapService {
                             System.out.println("price : " + price);
                             System.out.println("capacity : " + capacity);
                             System.out.println("link : " + href);
-                            LectureCreateRequest lectureCreateRequest = LectureCreateRequest.builder()
+
+                            Lecture lecture = Lecture.builder()
                                     .name(name)
                                     .time(time)
                                     .price(price)
@@ -120,7 +126,6 @@ public class GangseoScrapService {
                                     .centerName("서울시 50+강서50플러스센터")
                                     .address("서울특별시 강서구 강서로 56 가길 166 경동미르웰양천향교2차 203동 B1, 1층, 2층")
                                     .build();
-                            Lecture lecture = new Lecture(lectureCreateRequest);
 
                             Lecture lectureId = lectureRepository.save(lecture);
                             lId = lectureId.getId();
@@ -224,5 +229,18 @@ public class GangseoScrapService {
         driver.close();
         driver.quit();
         Thread.sleep(3000);
+    }
+
+    private boolean alreadySavedUserJudge(String link, String lectureStatus) {
+        Lecture lecture = lectureRepository.findByLink(link);
+
+        if (lecture == null) return false;
+        else if (lecture.getStatus().equals("N")) return true;
+        else if (lecture.getStatus().equals("P") && !lectureStatus.equals("수강신청")) {
+            lecture.setStatus("N");
+            lectureRepository.save(lecture);
+            return true;
+        }
+        return true;
     }
 }
