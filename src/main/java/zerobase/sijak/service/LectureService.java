@@ -28,8 +28,15 @@ public class LectureService {
     }
 
     public Lecture readLecture(Integer id) {
-        return lectureRepository.findById(id)
+
+        Lecture lecture = lectureRepository
+                .findById(id)
                 .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+
+        lecture.setView(lecture.getView() + 1);
+        lectureRepository.save(lecture);
+
+        return lecture;
     }
 
 
