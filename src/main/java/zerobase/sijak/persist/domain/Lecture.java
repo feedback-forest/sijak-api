@@ -30,6 +30,7 @@ public class Lecture {
     private String price;
 
     @OneToMany(mappedBy = "lecture")
+    @Builder.Default
     private List<Teacher> teachers = new ArrayList<>();
 
     private Integer capacity;
@@ -42,6 +43,7 @@ public class Lecture {
 
     @Column(name = "image_url")
     @OneToMany(mappedBy = "lecture")
+    @Builder.Default
     private List<Image> imageUrls = new ArrayList<>();
 
     private String link;
@@ -52,8 +54,10 @@ public class Lecture {
 
     private String status;
 
+    @Builder.Default
     private Integer view = 0;
 
+    @Builder.Default
     private String category = "미정";
 
     @Column(name = "center_name", nullable = false)
@@ -66,9 +70,11 @@ public class Lecture {
     private Double longitude;
 
     @OneToMany(mappedBy = "lecture")
+    @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
     @OneToMany(mappedBy = "lecture")
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
     public Lecture(LectureCreateRequest lectureCreateRequest) {

@@ -31,5 +31,6 @@ public class Teacher {
     private Lecture lecture;
 
     @OneToMany(mappedBy = "teacher")
+    @Builder.Default
     private List<Career> careers = new ArrayList<>();
 }
