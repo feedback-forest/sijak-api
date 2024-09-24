@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zerobase.sijak.dto.kakao.KakaoUserInfo;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class Member {
     private Double longitude;
 
     @Column(name = "birth")
-    private LocalDateTime birth;
+    private String birth;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
@@ -59,6 +60,18 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
+
+    public Member(KakaoUserInfo kakaoUserInfo) {
+        this.kakaoUserId = kakaoUserInfo.getKakaoUserId();
+        this.accountEmail = kakaoUserInfo.getEmail();
+        this.profileNickname = kakaoUserInfo.getNickname();
+        this.birth = kakaoUserInfo.getBirth();
+        this.profileImageUrl = kakaoUserInfo.getProfileImageUrl();
+        this.name = kakaoUserInfo.getName();
+        this.gender = kakaoUserInfo.getGender();
+        this.ageRange = kakaoUserInfo.getAgeRange();
+
+    }
 
 
 }

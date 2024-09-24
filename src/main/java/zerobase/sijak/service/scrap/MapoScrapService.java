@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
 import zerobase.sijak.persist.domain.Image;
 import zerobase.sijak.persist.domain.Lecture;
@@ -29,6 +30,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class MapoScrapService {
 
     private final LectureRepository lectureRepository;
@@ -74,13 +76,14 @@ public class MapoScrapService {
             for (int i = 1; i < rows.size(); i++) {
                 WebElement row = rows.get(i);
                 List<WebElement> cols = row.findElements(By.tagName("td"));
+                if (alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
+                        , cols.get(cols.size() - 1).getText())) continue;
                 if (cols.get(cols.size() - 1).getText().equals("신청마감")) continue;
 
                 System.out.println("222");
                 for (int j = 2; j < cols.size(); j++) {
                     String content = cols.get(j).getText();
                     switch (j) {
-
                         case 3:
                             name = cols.get(j).getText();
                             System.out.println("name = " + name);
@@ -106,7 +109,7 @@ public class MapoScrapService {
                             href = link.getAttribute("href");
                             System.out.println("href = " + href);
 
-                            LectureCreateRequest lectureCreateRequest = LectureCreateRequest.builder()
+                            Lecture lecture = Lecture.builder()
                                     .name(name)
                                     .time(time)
                                     .price(price)
@@ -117,8 +120,6 @@ public class MapoScrapService {
                                     .centerName("마포시니어클럽")
                                     .address("서울특별시 마포구 동교로8길 58")
                                     .build();
-
-                            Lecture lecture = new Lecture(lectureCreateRequest);
 
                             Lecture lectureId = lectureRepository.save(lecture);
                             Teacher teahcer = Teacher.builder()
@@ -190,5 +191,18 @@ public class MapoScrapService {
         driver.quit();
         Thread.sleep(3000);
 
+    }
+
+    private boolean alreadySavedUserJudge(String link, String lectureStatus) {
+        Lecture lecture = lectureRepository.findByLink(link);
+
+        if (lecture == null) return false;
+        else if (lecture.getStatus().equals("N")) return true;
+        else if (lecture.getStatus().equals("P") && lectureStatus.equals("신청마감")) {
+            lecture.setStatus("N");
+            lectureRepository.save(lecture);
+            return true;
+        }
+        return true;
     }
 }

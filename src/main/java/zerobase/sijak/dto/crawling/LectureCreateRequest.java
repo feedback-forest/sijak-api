@@ -26,6 +26,7 @@ public class LectureCreateRequest {
 
     private String price;
 
+    @Builder.Default
     private List<Teacher> teachers = new ArrayList<>();
 
     private Integer capacity;
@@ -38,6 +39,7 @@ public class LectureCreateRequest {
 
     @Column(name = "image_url")
     @JsonProperty("image_url")
+    @Builder.Default
     private List<Image> imageUrls = new ArrayList<>();
 
     private String link;
@@ -61,8 +63,10 @@ public class LectureCreateRequest {
 
     private Double longitude;
 
+    @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
 }

@@ -1,5 +1,6 @@
 package zerobase.sijak.dto.kakao;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,8 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ResponseDTO {
 
-    KakaoProfile kakaoProfile;
     TokenDTO tokenDTO;
 
+    @JsonProperty("is_new")
+    boolean isNew;
 }
 
