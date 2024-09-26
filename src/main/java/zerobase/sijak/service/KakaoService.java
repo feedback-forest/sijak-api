@@ -1,5 +1,6 @@
 package zerobase.sijak.service;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -12,10 +13,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import zerobase.sijak.SijakApplication;
+import zerobase.sijak.dto.MyPageParam;
 import zerobase.sijak.dto.kakao.*;
+import zerobase.sijak.exception.EmailNotExistException;
 import zerobase.sijak.exception.ErrorCode;
-import zerobase.sijak.exception.IdNotExistException;
-import zerobase.sijak.exception.LoginFailException;
+import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.jwt.KakaoUserService;
 import zerobase.sijak.jwt.KakaoUser;
 import zerobase.sijak.persist.domain.Member;
@@ -43,6 +45,7 @@ public class KakaoService {
     @Value("${user_info_uri}")
     private String USER_INFO_URI;
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
     private final MemberRepository memberRepository;
@@ -119,5 +122,26 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(email);
         return member == null;
+    }
+
+
+    public Member getMyPage(String token) {
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        return memberRepository.findByAccountEmail(claims.getSubject());
+    }
+
+
+    // 위치 기반으로 데이터를 저장 -> 수정 필요
+    public Member updateMyPage(MyPageParam myPageParam) {
+        return new Member();
     }
 }

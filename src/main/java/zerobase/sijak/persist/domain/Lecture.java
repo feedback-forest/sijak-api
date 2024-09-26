@@ -1,5 +1,6 @@
 package zerobase.sijak.persist.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,7 @@ public class Lecture {
     private Integer capacity;
 
     @Column(name = "day_of_week")
+    @JsonProperty("day_of_week")
     private String dayOfWeek;
 
     private String time;
@@ -43,6 +45,7 @@ public class Lecture {
 
     @Column(name = "image_url")
     @OneToMany(mappedBy = "lecture")
+    @JsonProperty("image_url")
     @Builder.Default
     private List<Image> imageUrls = new ArrayList<>();
 
@@ -61,6 +64,7 @@ public class Lecture {
     private String category = "미정";
 
     @Column(name = "center_name", nullable = false)
+    @JsonProperty("center_name")
     private String centerName;
 
     private String address;

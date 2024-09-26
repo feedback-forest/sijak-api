@@ -13,7 +13,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.sijak.dto.crawling.LectureCreateRequest;
 import zerobase.sijak.persist.domain.Career;
 import zerobase.sijak.persist.domain.Image;
 import zerobase.sijak.persist.domain.Lecture;
@@ -40,7 +39,7 @@ public class GangseoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    // @Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "";

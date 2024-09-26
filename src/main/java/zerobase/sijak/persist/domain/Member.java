@@ -1,5 +1,6 @@
 package zerobase.sijak.persist.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,15 +25,19 @@ public class Member {
     private Integer id;
 
     @Column(name = "kakao_user_id", unique = true, nullable = false)
+    @JsonProperty("kakao_user_id")
     private Long kakaoUserId;
 
     @Column(name = "account_email", unique = true, nullable = false)
+    @JsonProperty("account_email")
     private String accountEmail;
 
     @Column(name = "profile_nickname")
+    @JsonProperty("profile_nickname")
     private String profileNickname;
 
     @Column(name = "profile_image_url")
+    @JsonProperty("profile_image_url")
     private String profileImageUrl;
 
     @Column(name = "user_name")
@@ -42,7 +47,11 @@ public class Member {
     private String gender;
 
     @Column(name = "age_range")
+    @JsonProperty("age_range")
     private String ageRange;
+
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "latitude")
     private Double latitude;
@@ -72,6 +81,5 @@ public class Member {
         this.ageRange = kakaoUserInfo.getAgeRange();
 
     }
-
 
 }
