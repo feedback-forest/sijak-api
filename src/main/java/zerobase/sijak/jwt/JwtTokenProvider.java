@@ -113,7 +113,7 @@ public class JwtTokenProvider {
     }
 
     //토큰을 claims로 변환하는 메서드
-    private Claims parseClaims(String accessToken) {
+    public Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(key)

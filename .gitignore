@@ -37,10 +37,7 @@ out/
 .vscode/
 
 ### personal info ###
-application.properties
 application.yml
-*.png
 *.jpg
 *.sql
-*.xml
 *.log
