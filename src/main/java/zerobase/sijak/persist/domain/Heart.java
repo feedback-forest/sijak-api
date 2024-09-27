@@ -24,7 +24,7 @@ public class Heart {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id")
+    @JoinColumn(name = "lecture_id")
     private Lecture lecture;
 
 }

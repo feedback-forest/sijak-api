@@ -119,6 +119,7 @@ public class NowonScrapService {
                                     .price(price)
                                     .capacity(capacity)
                                     .link(href)
+                                    .view(0)
                                     .status("P")
                                     .latitude(37.6561352)
                                     .longitude(127.0707057)
