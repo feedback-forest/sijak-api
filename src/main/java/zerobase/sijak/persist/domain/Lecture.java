@@ -59,8 +59,7 @@ public class Lecture {
 
     private String status;
 
-    @Builder.Default
-    private Integer view = 0;
+    private Integer view;
 
     @Builder.Default
     private String category = "미정";
@@ -83,22 +82,4 @@ public class Lecture {
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
-    public Lecture(LectureCreateRequest lectureCreateRequest) {
-        this.name = lectureCreateRequest.getName();
-        this.description = lectureCreateRequest.getDescription();
-        this.price = lectureCreateRequest.getPrice();
-        this.capacity = lectureCreateRequest.getCapacity();
-        this.dayOfWeek = lectureCreateRequest.getDayOfWeek();
-        this.time = lectureCreateRequest.getTime();
-        this.link = lectureCreateRequest.getLink();
-        this.location = lectureCreateRequest.getLocation();
-        this.status = lectureCreateRequest.getStatus();
-        this.hearts = lectureCreateRequest.getHearts();
-        this.reviews = lectureCreateRequest.getReviews();
-        this.imageUrls = lectureCreateRequest.getImageUrls();
-        this.centerName = lectureCreateRequest.getCenterName();
-        this.address = lectureCreateRequest.getAddress();
-        this.latitude = lectureCreateRequest.getLatitude();
-        this.longitude = lectureCreateRequest.getLongitude();
-    }
 }

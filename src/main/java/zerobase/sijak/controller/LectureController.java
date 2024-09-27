@@ -7,11 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import zerobase.sijak.dto.HttpResponse;
+import zerobase.sijak.dto.LectureHomeResponse;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.service.LectureService;
 
@@ -21,45 +19,47 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class LectureController {
 
     private final LectureService lectureService;
 
-//    @GetMapping("/api/lectures")
-//    public ResponseEntity<HttpResponse> readLectures() {
-//        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureService.readLectures()));
-//    }
-
-    @GetMapping("/api/lectures")
-    public ResponseEntity<HttpResponse> readLectures(@RequestParam(defaultValue = "0") int page,
+    @GetMapping("/lectures")
+    public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
+                                                     @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Slice<Lecture> lectures = lectureService.readLectures(pageable);
+        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext())));
-
-
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(),
+                Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext())));
     }
 
-    @GetMapping("/api/lectures/{id}")
+    @GetMapping("/lectures/{id}")
     public ResponseEntity<HttpResponse> readLecture(@PathVariable int id) {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureService.readLecture(id)));
     }
 
-    @GetMapping("/api/home")
+    @GetMapping("/home")
     public ResponseEntity<HttpResponse> readLecturs() {
         return null;
     }
 
-    @GetMapping("/api/mypage")
+    @GetMapping("/mypage")
     public ResponseEntity<HttpResponse> readMypage() {
         return null;
     }
 
-    @GetMapping("/api/wishes")
+    @GetMapping("/wishes")
     public ResponseEntity<HttpResponse> readWishes() {
         return null;
+    }
+
+    @PostMapping("/wishes/{lecture_id}")
+    public ResponseEntity<HttpResponse> createWish(@RequestHeader("Authorization") String token, @PathVariable int lecture_id) {
+        lectureService.toggleHeart(token, lecture_id);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
     }
 
 
