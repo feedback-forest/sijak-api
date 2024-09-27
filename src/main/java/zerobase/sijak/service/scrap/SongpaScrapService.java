@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
@@ -36,7 +37,7 @@ public class SongpaScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    // @Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", dayOfWeek = "", location = "";
@@ -56,7 +57,7 @@ public class SongpaScrapService {
 
         String SONGPA_URL = "https://www.songpawoman.org/2024/search.asp?catg_s_num=&dayofweek=&key=&keyf=&keyhour=&wk1=&wk2=&wk3=&wk4=&wk5=&wk6=&v=l&g=1&Page_Current=%d";
 
-        int idx = 1;
+        int idx = 19;
         while (true) {
             String url = String.format(SONGPA_URL, idx);
             log.info("url : {} ", url);
