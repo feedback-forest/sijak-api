@@ -37,7 +37,7 @@ public class SongpaScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", dayOfWeek = "", location = "";
@@ -116,13 +116,14 @@ public class SongpaScrapService {
                             log.info("location : {}", location);
                             log.info("capacity : {}", capacity);
 
-                            LectureCreateRequest lectureCreateRequest = LectureCreateRequest.builder()
+                            Lecture lecture = Lecture.builder()
                                     .name(name)
                                     .link(href)
                                     .time(time)
                                     .dayOfWeek(dayOfWeek)
                                     .location(location)
                                     .price(price)
+                                    .view(0)
                                     .latitude(37.556445)
                                     .longitude(126.946607)
                                     .address("서울특별시 마포구 동교로8길 58")
@@ -131,7 +132,6 @@ public class SongpaScrapService {
                                     .status("P")
                                     .build();
 
-                            Lecture lecture = new Lecture(lectureCreateRequest);
                             Lecture lectureId = lectureRepository.save(lecture);
                             lId = lectureId.getId();
                             log.info("lId : {} ", lId);

@@ -115,6 +115,7 @@ public class MapoScrapService {
                                     .price(price)
                                     .capacity(capacity)
                                     .status("P")
+                                    .view(0)
                                     .latitude(37.556445)
                                     .longitude(126.946607)
                                     .centerName("마포시니어클럽")

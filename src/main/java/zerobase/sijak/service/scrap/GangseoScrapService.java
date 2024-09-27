@@ -39,7 +39,7 @@ public class GangseoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    // @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "";
@@ -58,7 +58,7 @@ public class GangseoScrapService {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(120));
 
         String GANGSEO_URL = "https://50plus.or.kr/gsc/education.do?page=%d&";
-        int idx = 2;
+        int idx = 1;
         while (true) {
             String url = String.format(GANGSEO_URL, idx);
             System.out.println("url :" + url);
@@ -119,6 +119,7 @@ public class GangseoScrapService {
                                     .price(price)
                                     .capacity(capacity)
                                     .link(href)
+                                    .view(0)
                                     .status("P")
                                     .latitude(37.5663709)
                                     .longitude(126.8424769)
