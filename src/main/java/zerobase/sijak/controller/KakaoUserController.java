@@ -1,14 +1,17 @@
 package zerobase.sijak.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import zerobase.sijak.dto.HttpResponse;
+import zerobase.sijak.dto.MyPageParam;
+import zerobase.sijak.dto.MyPageRequest;
 import zerobase.sijak.dto.kakao.ResponseDTO;
+import zerobase.sijak.persist.domain.Member;
 import zerobase.sijak.service.KakaoService;
 
 @Slf4j
@@ -30,5 +33,25 @@ public class KakaoUserController {
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), responseDTO));
     }
+
+    @GetMapping("/mypage")
+    public ResponseEntity<HttpResponse> getMyPage(@RequestHeader("Authorization") String token) {
+        Member member = kakaoService.getMyPage(token);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), member));
+    }
+
+    @PostMapping("/mypage")
+    public ResponseEntity<HttpResponse> updateMyPage(@RequestBody @Valid MyPageRequest myPageRequest) {
+
+        MyPageParam myPageParam = MyPageParam.builder()
+                .nickname(myPageRequest.getNickname())
+                .address(myPageRequest.getAddress()).build();
+
+        kakaoService.updateMyPage(myPageParam);
+
+
+        return null;
+    }
+
 
 }
