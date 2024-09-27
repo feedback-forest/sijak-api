@@ -58,7 +58,7 @@ public class GangseoScrapService {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(120));
 
         String GANGSEO_URL = "https://50plus.or.kr/gsc/education.do?page=%d&";
-        int idx = 1;
+        int idx = 2;
         while (true) {
             String url = String.format(GANGSEO_URL, idx);
             System.out.println("url :" + url);

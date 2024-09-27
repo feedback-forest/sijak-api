@@ -2,6 +2,7 @@ package zerobase.sijak.persist.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Lecture {
 
     private String name;
 
+    @Size(max = 1000)
     private String description;
 
     private String price;
