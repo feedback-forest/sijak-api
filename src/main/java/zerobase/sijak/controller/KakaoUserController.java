@@ -21,17 +21,17 @@ public class KakaoUserController {
 
     private final KakaoService kakaoService;
 
-    @GetMapping("/index")
-    public String login() {
-        return "index";
-    }
-
     @GetMapping("/login/oauth2/code/kakao")
     public ResponseEntity<HttpResponse> getToken(@RequestParam("code") String code) {
         log.info("get token");
         ResponseDTO responseDTO = kakaoService.createPrivateToken(code);
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), responseDTO));
+    }
+
+    @GetMapping("/kakao/logout")
+    public String logout() {
+        return kakaoService.logoutFromKakao();
     }
 
     @GetMapping("/mypage")

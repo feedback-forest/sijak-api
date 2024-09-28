@@ -1,5 +1,6 @@
 package zerobase.sijak.persist.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -62,11 +63,12 @@ public class Member {
     @Column(name = "birth")
     private String birth;
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member")
     @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "member")
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 

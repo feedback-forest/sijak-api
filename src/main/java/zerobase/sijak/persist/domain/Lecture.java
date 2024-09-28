@@ -1,5 +1,6 @@
 package zerobase.sijak.persist.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -74,10 +75,12 @@ public class Lecture {
 
     private Double longitude;
 
+
     @OneToMany(mappedBy = "lecture")
     @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "lecture")
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();

@@ -11,14 +11,20 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LectureHomeResponse {
 
-    Integer id;
+    private Integer id;
 
-    String name;
+    private String thumbnail;
 
-    String time;
+    private String name;
 
-    String address;
+    private String time;
 
-    boolean isHeart;
+    private String target;
+
+    private String address;
+
+    private String link;
+
+    private boolean isHeart;
 
 }

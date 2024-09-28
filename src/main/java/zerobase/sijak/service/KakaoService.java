@@ -45,6 +45,12 @@ public class KakaoService {
     @Value("${user_info_uri}")
     private String USER_INFO_URI;
 
+    @Value("${logout_uri}")
+    private String LOGOUT_URI;
+
+    @Value("${logout_redirect_url}")
+    private String LOGOUT_REDIRECT_URI;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
@@ -107,14 +113,33 @@ public class KakaoService {
                 Member member = new Member(kakaoUserInfo);
                 kakaoRepository.save(kakaoUser);
                 memberRepository.save(member);
-                log.info("사용자 정보 DB 저장 성공");
+                log.info("첫 로그인 : 사용자 정보 DB 저장 성공");
             }
-
             TokenDTO tokenDTO = kakaoUserService.login(kakaoUserInfo.getEmail(), kakaoUserInfo.getName());
 
             return new ResponseDTO(tokenDTO, isAlreadySaved);
         }
         return null;
+    }
+
+    public String logoutFromKakao() {
+
+        String BASE_URL = "https://kauth.kakao.com";
+
+        WebClient wc = WebClient.create(LOGOUT_URI);
+
+        log.info("wc = {}", wc);
+        String res = wc.get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("client_id", CLIENT_ID)
+                        .queryParam("logout_redirect_uri", LOGOUT_REDIRECT_URI)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        log.info("rse = {}", res);
+        return res;
     }
 
 

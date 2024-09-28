@@ -39,17 +39,23 @@ public class LectureService {
     public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable) {
 
         if (token == null || token.isEmpty()) {
+            log.info("readLectues -> 회원이 아닙니다.");
             Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream().map(lecture -> {
+                String[] addressList = lecture.getAddress().split(" ");
+                String shortAddress = addressList[0] + " " + addressList[1];
                 return LectureHomeResponse.builder()
                         .id(lecture.getId())
                         .name(lecture.getName())
                         .time(lecture.getTime())
-                        .address(lecture.getAddress())
+                        .target(lecture.getTarget())
+                        .address(shortAddress)
+                        .link(lecture.getLink())
                         .isHeart(false).build();
             }).toList();
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
         } else {
+            log.info("readLectures -> 회원입니다.");
             String jwtToken = token.substring(7);
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
@@ -59,16 +65,22 @@ public class LectureService {
                 throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
             }
 
+            log.info("readLectures: member email {}", member.getAccountEmail());
             Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream().map(lecture -> {
                 boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
+                String[] addressList = lecture.getAddress().split(" ");
+                String shortAddress = addressList[0] + " " + addressList[1];
                 return LectureHomeResponse.builder()
                         .id(lecture.getId())
                         .name(lecture.getName())
                         .time(lecture.getTime())
-                        .address(lecture.getAddress())
+                        .target(lecture.getTarget())
+                        .address(shortAddress)
+                        .link(lecture.getLink())
                         .isHeart(isHeart).build();
             }).toList();
+
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
         }
     }
@@ -85,29 +97,6 @@ public class LectureService {
         return lecture;
     }
 
-    // 사용자 정보를 받아온다.
-    // 사용자 정보에 대해서 member_id를 가져오고
-    public void readHearts() {
-
-    }
-
-    public void toggleHeart(String token, int lecture_id) {
-
-        String jwtToken = token.substring(7);
-        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
-        log.info("email : {}", claims.getSubject());
-
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-
-        Lecture lecture = lectureRepository.findById(lecture_id)
-                .orElseThrow(() -> new IdNotExistException("해당 강좌 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
-
-        Heart heart = Heart.builder()
-                .member(member)
-                .lecture(lecture).build();
-
-    }
 
 
 }

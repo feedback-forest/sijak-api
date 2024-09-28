@@ -23,10 +23,14 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/docs/**")
                 .addResourceLocations("classpath:/static/docs/");
+
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
     }
 
 

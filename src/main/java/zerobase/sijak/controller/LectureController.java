@@ -56,11 +56,7 @@ public class LectureController {
         return null;
     }
 
-    @PostMapping("/wishes/{lecture_id}")
-    public ResponseEntity<HttpResponse> createWish(@RequestHeader("Authorization") String token, @PathVariable int lecture_id) {
-        lectureService.toggleHeart(token, lecture_id);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
-    }
+
 
 
 }

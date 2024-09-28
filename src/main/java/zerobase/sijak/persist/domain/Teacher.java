@@ -25,11 +25,12 @@ public class Teacher {
 
     private String name;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id")
-    @JsonIgnore
     private Lecture lecture;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "teacher")
     @Builder.Default
     private List<Career> careers = new ArrayList<>();
