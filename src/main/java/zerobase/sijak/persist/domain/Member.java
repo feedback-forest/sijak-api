@@ -1,11 +1,9 @@
 package zerobase.sijak.persist.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import zerobase.sijak.dto.kakao.KakaoUserInfo;
 
 import java.time.LocalDateTime;
@@ -16,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
+@Data
 public class Member {
 
     @Id
@@ -59,14 +57,19 @@ public class Member {
     @Column(name = "longitude")
     private Double longitude;
 
+    @Column(name = "phone_number")
+    @JsonProperty("phone_number")
+    private String phoneNumber;
+
     @Column(name = "birth")
     private String birth;
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "member")
     @Builder.Default
     private List<Heart> hearts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(mappedBy = "member")
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
@@ -79,7 +82,7 @@ public class Member {
         this.name = kakaoUserInfo.getName();
         this.gender = kakaoUserInfo.getGender();
         this.ageRange = kakaoUserInfo.getAgeRange();
+        this.phoneNumber = kakaoUserInfo.getPhoneNumber();
 
     }
-
 }

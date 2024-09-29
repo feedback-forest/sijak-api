@@ -25,9 +25,9 @@ public class Teacher {
 
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lecture_id")
     @JsonIgnore
+    @ManyToOne()
+    @JoinColumn(name = "lecture_id")
     private Lecture lecture;
 
     @OneToMany(mappedBy = "teacher")

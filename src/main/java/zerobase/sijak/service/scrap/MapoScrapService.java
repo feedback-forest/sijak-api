@@ -16,6 +16,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
+import zerobase.sijak.exception.ErrorCode;
+import zerobase.sijak.exception.IdNotExistException;
 import zerobase.sijak.persist.domain.Image;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Teacher;
@@ -38,10 +40,10 @@ public class MapoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    // @Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
-        String name = "", time = "", price = "", href = "", teacherName = "";
+        String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
 
         WebDriverManager.chromedriver().setup();
@@ -90,6 +92,12 @@ public class MapoScrapService {
                             break;
                         case 5:
                             time = cols.get(j).getText().replace("\n", "").replace("~", " ~ ");
+                            if (time.contains("~")) {
+                                startDate = time.split("~")[0].trim();
+                                endDate = time.split("~")[1].trim();
+                            } else {
+                                startDate = time.trim();
+                            }
                             System.out.println("time = " + time);
                             break;
                         case 6:
@@ -116,6 +124,7 @@ public class MapoScrapService {
                                     .capacity(capacity)
                                     .status("P")
                                     .view(0)
+                                    .division("정기 클래스")
                                     .latitude(37.556445)
                                     .longitude(126.946607)
                                     .centerName("마포시니어클럽")
@@ -169,12 +178,24 @@ public class MapoScrapService {
         System.out.println("111");
         Thread.sleep(2000);
 
-        Lecture lecture = lectureRepository.findById(lId).orElseThrow(RuntimeException::new);
+        Lecture lecture = lectureRepository.findById(lId)
+                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+
 
         List<WebElement> paragraphs = driver.findElements(By.cssSelector("#sit_inf_explan > div > p"));
 
+        String target = "", location = "", description = "";
         for (WebElement paragraph : paragraphs) {
             String innerText = paragraph.getAttribute("innerHTML");
+            if (innerText.contains("대상")) {
+                target = paragraph.getText().split(":")[1].trim();
+            }
+            if (innerText.contains("장소")) {
+                location = paragraph.getText().split(":")[1].trim();
+            }
+            if (innerText.contains("내용")) {
+                description = paragraph.getText().split(":")[1].trim();
+            }
             if (innerText.contains("img")) {
                 List<WebElement> imgs = paragraph.findElements(By.tagName("img"));
                 System.out.println("imgs.size: " + imgs.size());

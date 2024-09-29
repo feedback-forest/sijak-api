@@ -9,10 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import zerobase.sijak.dto.HttpResponse;
+import zerobase.sijak.dto.LectureAndPickResponse;
 import zerobase.sijak.dto.LectureHomeResponse;
+import zerobase.sijak.dto.PickHomeResponse;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.service.LectureService;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -31,36 +35,24 @@ public class LectureController {
 
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
+        List<PickHomeResponse> pickClasses = lectureService.getPickClasses();
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(),
-                Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext())));
+        Map<String, Object> totalList = new HashMap<>();
+        totalList.put("data", lectures.getContent());
+        totalList.put("hasNext", lectures.hasNext());
+        totalList.put("pickClasses", pickClasses);
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
     }
 
+    // Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext()
     @GetMapping("/lectures/{id}")
     public ResponseEntity<HttpResponse> readLecture(@PathVariable int id) {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureService.readLecture(id)));
     }
 
-    @GetMapping("/home")
-    public ResponseEntity<HttpResponse> readLecturs() {
-        return null;
-    }
 
-    @GetMapping("/mypage")
-    public ResponseEntity<HttpResponse> readMypage() {
-        return null;
-    }
 
-    @GetMapping("/wishes")
-    public ResponseEntity<HttpResponse> readWishes() {
-        return null;
-    }
-
-    @PostMapping("/wishes/{lecture_id}")
-    public ResponseEntity<HttpResponse> createWish(@RequestHeader("Authorization") String token, @PathVariable int lecture_id) {
-        lectureService.toggleHeart(token, lecture_id);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
-    }
 
 
 }

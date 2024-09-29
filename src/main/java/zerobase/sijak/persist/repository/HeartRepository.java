@@ -14,4 +14,6 @@ public interface HeartRepository extends JpaRepository<Heart, Integer> {
 
     List<Heart> findAllByMemberId(Integer memberId);
 
+    Heart findByLectureIdAndMemberId(Integer lectureId, Integer memberId);
+
 }

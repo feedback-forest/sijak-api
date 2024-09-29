@@ -4,13 +4,14 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import zerobase.sijak.exception.EmailNotExistException;
-import zerobase.sijak.exception.ErrorCode;
+import org.springframework.transaction.annotation.Transactional;
+import zerobase.sijak.exception.*;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.persist.domain.Heart;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Member;
 import zerobase.sijak.persist.repository.HeartRepository;
+import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
 import java.util.List;
@@ -19,11 +20,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class HeartService {
 
     private final HeartRepository heartRepository;
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LectureRepository lectureRepository;
 
 
     public boolean isHearted(int lectureId, int memberId) {
@@ -31,6 +34,9 @@ public class HeartService {
     }
 
     public List<Lecture> readHearts(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
@@ -45,8 +51,50 @@ public class HeartService {
 
     }
 
-    public void appendHearts(String token) {
+    public void appendHeart(String token, int lectureId) {
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
 
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+
+        if (heartRepository.existsByLectureIdAndMemberId(lectureId, member.getId())) {
+            throw new AlreadyHeartException("이미 찜한 강의입니다.", ErrorCode.ALREADY_PUSH_HEART);
+        }
+
+        Heart heart = Heart.builder()
+                .member(member)
+                .lecture(lecture).build();
+
+        heartRepository.save(heart);
+    }
+
+    public void deleteHeart(String token, int lectureId) {
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+
+        Heart heart = heartRepository.findByLectureIdAndMemberId(lectureId, member.getId());
+
+        if (heart == null) throw new HeartRemoveException("찜클래스 삭제에 실패했습니다.", ErrorCode.HEART_REMOVE_FAILED);
+
+        heartRepository.delete(heart);
     }
 
 }

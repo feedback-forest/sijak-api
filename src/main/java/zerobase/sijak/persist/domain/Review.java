@@ -1,6 +1,8 @@
 package zerobase.sijak.persist.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,11 +21,13 @@ public class Review {
     @Column(name = "review_id")
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ManyToOne()
     @JoinColumn(name = "lecture_id")
     private Lecture lecture;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ManyToOne()
     @JoinColumn(name = "member_id")
     private Member member;
 
