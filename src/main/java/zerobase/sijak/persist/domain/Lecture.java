@@ -45,6 +45,15 @@ public class Lecture {
 
     private String time;
 
+    private String thumbnail;
+
+    @JsonProperty("start_date")
+    private String startDate;
+
+    @JsonProperty("end_date")
+    private String endDate;
+
+    private Integer total;
 
     @Column(name = "image_url")
     @OneToMany(mappedBy = "lecture")
@@ -56,9 +65,24 @@ public class Lecture {
 
     private String location;
 
+    @JsonProperty("text_book_name")
+    @Column(name = "text_book_name")
+    private String textBookName;
+
+    @JsonProperty("text_book_price")
+    @Column(name = "text_book_price")
+    private String textBookPrice;
+
+    private String division;
+
+    @Size(max = 1000)
+    private String certification;
+
     private String target;
 
     private String status;
+
+    private String need;
 
     private Integer view;
 
@@ -70,6 +94,8 @@ public class Lecture {
     private String centerName;
 
     private String address;
+
+    private String distance;
 
     private Double latitude;
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestHeader;
 import zerobase.sijak.dto.LectureHomeResponse;
+import zerobase.sijak.dto.PickHomeResponse;
 import zerobase.sijak.exception.EmailNotExistException;
 import zerobase.sijak.exception.ErrorCode;
 import zerobase.sijak.exception.IdNotExistException;
@@ -51,7 +52,7 @@ public class LectureService {
                         .target(lecture.getTarget())
                         .address(shortAddress)
                         .link(lecture.getLink())
-                        .isHeart(false).build();
+                        .heart(false).build();
             }).toList();
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
         } else {
@@ -78,7 +79,7 @@ public class LectureService {
                         .target(lecture.getTarget())
                         .address(shortAddress)
                         .link(lecture.getLink())
-                        .isHeart(isHeart).build();
+                        .heart(isHeart).build();
             }).toList();
 
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
@@ -97,6 +98,20 @@ public class LectureService {
         return lecture;
     }
 
+    public List<PickHomeResponse> getPickClasses() {
+        List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+
+
+        return topLectures.stream()
+                .map(lecture -> PickHomeResponse.builder()
+                        .id(lecture.getId())
+                        .view(lecture.getView())
+                        .name(lecture.getName())
+                        .time(lecture.getTime())
+                        .target(lecture.getTarget())
+                        .link(lecture.getLink())
+                        .build()).collect(Collectors.toList());
+    }
 
 
 }
