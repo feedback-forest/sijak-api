@@ -12,7 +12,7 @@ public class HeartRemoveException extends RuntimeException {
 
     public HeartRemoveException(String message, ErrorCode errorCode) {
         super(message);
-        log.info("IdNotExistException -> message: {}, errorCode: {}", message, errorCode);
+        log.info("HeartRemoveException -> message: {}, errorCode: {}", message, errorCode);
         this.errorCode = errorCode;
     }
 

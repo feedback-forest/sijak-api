@@ -95,8 +95,6 @@ public class Lecture {
 
     private String address;
 
-    private String distance;
-
     private Double latitude;
 
     private Double longitude;

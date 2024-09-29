@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NicknameRequest {
 
-    @Size(min = 2, max = 12)
     private String nickname;
 
 }

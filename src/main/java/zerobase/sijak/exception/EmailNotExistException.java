@@ -12,7 +12,7 @@ public class EmailNotExistException extends RuntimeException {
 
     public EmailNotExistException(String message, ErrorCode errorCode) {
         super(message);
-        log.info("IdNotExistException -> message: {}, errorCode: {}", message, errorCode);
+        log.info("EmailNotExistException -> message: {}, errorCode: {}", message, errorCode);
         this.errorCode = errorCode;
     }
 

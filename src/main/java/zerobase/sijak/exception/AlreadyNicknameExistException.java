@@ -12,7 +12,7 @@ public class AlreadyNicknameExistException extends RuntimeException {
 
     public AlreadyNicknameExistException(String message, ErrorCode errorCode) {
         super(message);
-        log.info("IdNotExistException -> message: {}, errorCode: {}", message, errorCode);
+        log.info("AlreadyNicknameExistException -> message: {}, errorCode: {}", message, errorCode);
         this.errorCode = errorCode;
     }
 

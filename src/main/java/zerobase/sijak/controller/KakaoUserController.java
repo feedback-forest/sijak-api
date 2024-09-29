@@ -6,14 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.ResponseDTO;
-import zerobase.sijak.persist.domain.Member;
 import zerobase.sijak.service.KakaoService;
-
-import java.net.URI;
 
 @Slf4j
 @RestController
@@ -31,7 +27,7 @@ public class KakaoUserController {
     }
 
     @PostMapping("/api/nickname/validate")
-    public ResponseEntity<HttpResponse> setNickname(@RequestParam(name = "nickname") @Valid String nickname) {
+    public ResponseEntity<HttpResponse> setNickname(@RequestParam(name = "nickname") String nickname) {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
         kakaoService.validateNickname(nicknameRequest);
@@ -40,11 +36,11 @@ public class KakaoUserController {
 
     @PostMapping("/api/nickname")
     public ResponseEntity<HttpResponse> updateNickname(@RequestHeader("Authorization") String token,
-                                                       @RequestParam(name = "nickname") @Valid String nickname) {
+                                                       @RequestParam(name = "nickname") String nickname) {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
         kakaoService.setNickname(token, nicknameRequest);
-        return null;
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
     }
 
     @GetMapping("/api/mypage")

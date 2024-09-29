@@ -1,16 +1,17 @@
 package zerobase.sijak.exception;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
 
 
-    private String status;
+    private int status;
     private String message;
     private String data;
 
