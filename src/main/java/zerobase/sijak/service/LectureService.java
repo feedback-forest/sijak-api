@@ -8,6 +8,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zerobase.sijak.dto.LectureDetailResponse;
 import zerobase.sijak.dto.LectureHomeResponse;
 import zerobase.sijak.dto.PickHomeResponse;
 import zerobase.sijak.exception.EmailNotExistException;
@@ -155,10 +156,9 @@ public class LectureService {
 
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
         }
-
     }
 
-    public Lecture readLecture(Integer id) {
+    public LectureDetailResponse readLecture(Integer id) {
 
         Lecture lecture = lectureRepository
                 .findById(id)
@@ -166,10 +166,30 @@ public class LectureService {
 
         lecture.setView(lecture.getView() + 1);
         lectureRepository.save(lecture);
+        LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
+                .id(lecture.getId())
+                .name(lecture.getName())
+                .description(lecture.getDescription())
+                .price(lecture.getPrice())
+                .dayOfWeek(lecture.getDayOfWeek())
+                .time(lecture.getTime())
+                .capacity(lecture.getCapacity())
+                .link(lecture.getLink())
+                .location(lecture.getLocation())
+                .status(lecture.isStatus())
+                .thumbnail(lecture.getThumbnail())
+                .address(lecture.getAddress())
+                .hostedBy(lecture.getCenterName())
+                .division(lecture.getDivision())
+                .condition(lecture.getTarget())
+                .detail(lecture.getDescription())
+                .certification(lecture.getCertification())
+                .textBookName(lecture.getTextBookName())
+                .textBookPrice(lecture.getTextBookPrice())
+                .need(lecture.getNeed())
+                .build();
 
-        
-
-        return lecture;
+        return lectureDetailResponse;
     }
 
     public List<PickHomeResponse> getPickClasses() {
@@ -190,21 +210,5 @@ public class LectureService {
                         .link(lecture.getLink())
                         .build()).collect(Collectors.toList());
     }
-
-//    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-//
-//        double dLat = Math.toRadians(lat2 - lat1);
-//        double dLon = Math.toRadians(lng2 - lng1);
-//
-//        // Haversine 공식
-//        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-//                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-//                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//
-//        // 거리를 계산하여 반환 (단위: 킬로미터)
-//        return EARTH_RADIUS_KM * c;
-//    }
-
 
 }

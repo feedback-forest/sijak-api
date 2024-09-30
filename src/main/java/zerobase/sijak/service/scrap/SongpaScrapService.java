@@ -40,7 +40,7 @@ public class SongpaScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    // @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
