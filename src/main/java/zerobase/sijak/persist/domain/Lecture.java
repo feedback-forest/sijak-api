@@ -80,7 +80,7 @@ public class Lecture {
 
     private String target;
 
-    private String status;
+    private boolean status;
 
     private String need;
 

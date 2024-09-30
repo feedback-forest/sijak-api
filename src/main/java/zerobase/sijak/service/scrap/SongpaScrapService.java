@@ -134,7 +134,7 @@ public class SongpaScrapService {
                                     .centerName("마포시니어클럽")
                                     .capacity(capacity)
                                     .division("정기 클래스")
-                                    .status("P")
+                                    .status(true)
                                     .endDate("")
                                     .total(12)
                                     .build();
@@ -261,9 +261,8 @@ public class SongpaScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.getStatus().equals("N")) return true;
-        else if (lecture.getStatus().equals("P") && lectureStatus.equals("마감")) {
-            lecture.setStatus("N");
+        else if (lecture.isStatus() && lectureStatus.equals("마감")) {
+            lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }

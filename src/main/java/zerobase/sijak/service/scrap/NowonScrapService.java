@@ -132,7 +132,7 @@ public class NowonScrapService {
                                     .endDate(endDate)
                                     .division("정기 클래스")
                                     .view(0)
-                                    .status("P")
+                                    .status(true)
                                     .latitude(37.6561352)
                                     .longitude(127.0707057)
                                     .centerName("서울시 50+노원50플러스센터")
@@ -276,9 +276,8 @@ public class NowonScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.getStatus().equals("N")) return true;
-        else if (lecture.getStatus().equals("P") && !lectureStatus.equals("수강신청")) {
-            lecture.setStatus("N");
+        else if (lecture.isStatus() && !lectureStatus.equals("수강신청")) {
+            lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }

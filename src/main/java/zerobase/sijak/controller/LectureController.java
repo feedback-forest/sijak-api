@@ -28,13 +28,15 @@ public class LectureController {
 
     private final LectureService lectureService;
 
-    @GetMapping("/lectures")
-    public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size) {
+    @GetMapping("/home")
+    public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
+                                                 @RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "10") int size,
+                                                 @RequestParam("longitude") double longitude,
+                                                 @RequestParam("latitude") double latitude) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
+        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, longitude, latitude);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses();
 
         Map<String, Object> totalList = new HashMap<>();
@@ -45,14 +47,27 @@ public class LectureController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
     }
 
+    @GetMapping("/lectures")
+    public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
+                                                     @RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
+        List<PickHomeResponse> pickClasses = lectureService.getPickClasses();
+
+        Map<String, Object> totalList = new HashMap<>();
+        totalList.put("data", lectures.getContent());
+        totalList.put("hasNext", lectures.hasNext());
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
+    }
+
+
     // Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext()
     @GetMapping("/lectures/{id}")
     public ResponseEntity<HttpResponse> readLecture(@PathVariable int id) {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureService.readLecture(id)));
     }
-
-
-
 
 
 }
