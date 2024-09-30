@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class LectureDetailResponse {
 
     private String description;
 
-    private Integer price;
+    private String price;
 
     @JsonProperty("day_of_week")
     private String dayOfWeek;
@@ -67,7 +69,10 @@ public class LectureDetailResponse {
     private String need;
 
     @JsonProperty("instructor_name")
-    private String instructorName;
+    private List<String> instructorName;
+
+    @JsonProperty("instructor_history")
+    private List<String> instructorHistory;
 
     private String distance;
 

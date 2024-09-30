@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +99,8 @@ public class Lecture {
     private Double latitude;
 
     private Double longitude;
+
+    private LocalDateTime deadline;
 
 
     @OneToMany(mappedBy = "lecture")

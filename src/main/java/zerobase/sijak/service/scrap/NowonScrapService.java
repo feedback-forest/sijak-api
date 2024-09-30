@@ -24,6 +24,8 @@ import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.TeacherRepository;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +47,7 @@ public class NowonScrapService {
 
         String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
+        LocalDateTime deadline = LocalDateTime.now();
 
         WebDriverManager.chromedriver().setup();
 
@@ -90,6 +93,20 @@ public class NowonScrapService {
                             name = cols.get(j).getText();
                             System.out.println("name = " + name);
                             break;
+                        case 4:
+                            String[] date = cols.get(j).getText().split("~");
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss");
+                            if (date.length == 1) {
+                                log.info("end = {}", date[0].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[0].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            } else if (date.length == 2) {
+                                log.info("end = {}", date[1].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[1].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            }
+                            System.out.println("deadline = " + deadline);
+                            break;
                         case 5:
                             time = cols.get(j).getText().replace("\n", "").replace("~", " ~ ");
                             startDate = time.split("~")[0].trim();
@@ -126,6 +143,7 @@ public class NowonScrapService {
                                     .textBookName("")
                                     .textBookPrice("")
                                     .thumbnail("")
+                                    .deadline(deadline)
                                     .capacity(capacity)
                                     .link(href)
                                     .startDate(startDate)

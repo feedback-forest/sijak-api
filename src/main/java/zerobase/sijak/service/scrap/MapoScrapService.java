@@ -27,6 +27,8 @@ import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.TeacherRepository;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -40,11 +42,12 @@ public class MapoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    // @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
+        LocalDateTime deadline = LocalDateTime.now();
 
         WebDriverManager.chromedriver().setup();
 
@@ -90,6 +93,20 @@ public class MapoScrapService {
                             name = cols.get(j).getText();
                             System.out.println("name = " + name);
                             break;
+                        case 4:
+                            String[] date = cols.get(j).getText().split("~");
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss");
+                            if (date.length == 1) {
+                                log.info("end = {}", date[0].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[0].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            } else if (date.length == 2) {
+                                log.info("end = {}", date[1].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[1].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            }
+                            System.out.println("deadline = " + deadline);
+                            break;
                         case 5:
                             time = cols.get(j).getText().replace("\n", "").replace("~", " ~ ");
                             if (time.contains("~")) {
@@ -123,6 +140,7 @@ public class MapoScrapService {
                                     .price(price)
                                     .capacity(capacity)
                                     .status(true)
+                                    .deadline(deadline)
                                     .view(0)
                                     .division("정기 클래스")
                                     .latitude(37.556445)
@@ -189,12 +207,18 @@ public class MapoScrapService {
             String innerText = paragraph.getAttribute("innerHTML");
             if (innerText.contains("대상")) {
                 target = paragraph.getText().split(":")[1].trim();
+                lecture.setTarget(target);
+                lectureRepository.save(lecture);
             }
             if (innerText.contains("장소")) {
                 location = paragraph.getText().split(":")[1].trim();
+                lecture.setLocation(location);
+                lectureRepository.save(lecture);
             }
             if (innerText.contains("내용")) {
                 description = paragraph.getText().split(":")[1].trim();
+                lecture.setDescription(description);
+                lectureRepository.save(lecture);
             }
             if (innerText.contains("img")) {
                 List<WebElement> imgs = paragraph.findElements(By.tagName("img"));
