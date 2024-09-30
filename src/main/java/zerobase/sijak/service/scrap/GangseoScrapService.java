@@ -23,6 +23,8 @@ import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.TeacherRepository;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +44,10 @@ public class GangseoScrapService {
     //@Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
-        String name = "", time = "", price = "", href = "";
+        String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
-
+        LocalDateTime deadline = LocalDateTime.now();
+        log.info("deadline : {}", deadline);
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
@@ -90,8 +93,24 @@ public class GangseoScrapService {
                             name = cols.get(j).getText();
                             System.out.println("name = " + name);
                             break;
+                        case 4:
+                            String[] date = cols.get(j).getText().split("~");
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss");
+                            if (date.length == 1) {
+                                log.info("end = {}", date[0].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[0].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            } else if (date.length == 2) {
+                                log.info("end = {}", date[1].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[1].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            }
+                            System.out.println("deadline = " + deadline);
+                            break;
                         case 5:
                             time = cols.get(j).getText().replace("\n", "").replace("~", " ~ ");
+                            startDate = time.split("~")[0].trim();
+                            endDate = time.split("~")[1].trim();
                             System.out.println("time = " + time);
                             break;
                         case 7:
@@ -117,10 +136,21 @@ public class GangseoScrapService {
                                     .name(name)
                                     .time(time)
                                     .price(price)
+                                    .total(-1)
+                                    .certification("")
+                                    .dayOfWeek("")
+                                    .target("")
+                                    .textBookName("")
+                                    .textBookPrice("")
+                                    .thumbnail("")
                                     .capacity(capacity)
+                                    .deadline(deadline)
                                     .link(href)
+                                    .startDate(startDate)
+                                    .endDate(endDate)
+                                    .division("정기 클래스")
                                     .view(0)
-                                    .status("P")
+                                    .status(true)
                                     .latitude(37.5663709)
                                     .longitude(126.8424769)
                                     .centerName("서울시 50+강서50플러스센터")
@@ -167,6 +197,36 @@ public class GangseoScrapService {
         Thread.sleep(2000);
 
         Lecture lecture = lectureRepository.findById(lId).orElseThrow(RuntimeException::new);
+
+        WebElement we = driver.findElement(By.cssSelector("body > div.container > div.course-content.clearfix > div.course-left > div.course-schedule-table > div > table > tbody > tr:nth-child(1)"));
+        List<WebElement> tds = we.findElements(By.tagName("td"));
+
+        String time = "", location = "", description = "", need = "";
+        for (int i = 0; i < tds.size(); i++) {
+            switch (i) {
+                case 0:
+                    time = tds.get(i).getText().split("\n")[1].replace("(", "").replace(")", "");
+                    break;
+                case 1:
+                    location = tds.get(i).getText();
+                    break;
+                case 3:
+                    description = tds.get(i).getText();
+                    break;
+                case 4:
+                    need = tds.get(i).getText();
+
+            }
+        }
+        lecture.setTime(time);
+        lecture.setLocation(location);
+        lecture.setDescription(description);
+        lecture.setNeed(need);
+
+        log.info("time : {}", time);
+
+        lecture = lectureRepository.save(lecture);
+
 
         List<String> images = new ArrayList<>();
         WebElement specificDiv = driver.findElement(By.xpath("/html/body/div[3]/div[2]/div[1]/div[1]"));
@@ -225,6 +285,7 @@ public class GangseoScrapService {
             System.out.println("teachers = " + teachers);
         }
 
+
         System.out.println("상세 읽기 finish!");
         driver.close();
         driver.quit();
@@ -235,9 +296,8 @@ public class GangseoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.getStatus().equals("N")) return true;
-        else if (lecture.getStatus().equals("P") && !lectureStatus.equals("수강신청")) {
-            lecture.setStatus("N");
+        else if (lecture.isStatus() && !lectureStatus.equals("수강신청")) {
+            lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }

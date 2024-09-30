@@ -16,6 +16,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
+import zerobase.sijak.exception.ErrorCode;
+import zerobase.sijak.exception.IdNotExistException;
 import zerobase.sijak.persist.domain.Image;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Teacher;
@@ -25,6 +27,8 @@ import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.TeacherRepository;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -41,8 +45,9 @@ public class MapoScrapService {
     //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
-        String name = "", time = "", price = "", href = "", teacherName = "";
+        String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
+        LocalDateTime deadline = LocalDateTime.now();
 
         WebDriverManager.chromedriver().setup();
 
@@ -88,8 +93,28 @@ public class MapoScrapService {
                             name = cols.get(j).getText();
                             System.out.println("name = " + name);
                             break;
+                        case 4:
+                            String[] date = cols.get(j).getText().split("~");
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss");
+                            if (date.length == 1) {
+                                log.info("end = {}", date[0].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[0].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            } else if (date.length == 2) {
+                                log.info("end = {}", date[1].trim());
+                                LocalDateTime end = LocalDateTime.parse(date[1].trim() + "T00:00:00", formatter);
+                                deadline = end;
+                            }
+                            System.out.println("deadline = " + deadline);
+                            break;
                         case 5:
                             time = cols.get(j).getText().replace("\n", "").replace("~", " ~ ");
+                            if (time.contains("~")) {
+                                startDate = time.split("~")[0].trim();
+                                endDate = time.split("~")[1].trim();
+                            } else {
+                                startDate = time.trim();
+                            }
                             System.out.println("time = " + time);
                             break;
                         case 6:
@@ -114,8 +139,10 @@ public class MapoScrapService {
                                     .time(time)
                                     .price(price)
                                     .capacity(capacity)
-                                    .status("P")
+                                    .status(true)
+                                    .deadline(deadline)
                                     .view(0)
+                                    .division("정기 클래스")
                                     .latitude(37.556445)
                                     .longitude(126.946607)
                                     .centerName("마포시니어클럽")
@@ -169,12 +196,30 @@ public class MapoScrapService {
         System.out.println("111");
         Thread.sleep(2000);
 
-        Lecture lecture = lectureRepository.findById(lId).orElseThrow(RuntimeException::new);
+        Lecture lecture = lectureRepository.findById(lId)
+                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+
 
         List<WebElement> paragraphs = driver.findElements(By.cssSelector("#sit_inf_explan > div > p"));
 
+        String target = "", location = "", description = "";
         for (WebElement paragraph : paragraphs) {
             String innerText = paragraph.getAttribute("innerHTML");
+            if (innerText.contains("대상")) {
+                target = paragraph.getText().split(":")[1].trim();
+                lecture.setTarget(target);
+                lectureRepository.save(lecture);
+            }
+            if (innerText.contains("장소")) {
+                location = paragraph.getText().split(":")[1].trim();
+                lecture.setLocation(location);
+                lectureRepository.save(lecture);
+            }
+            if (innerText.contains("내용")) {
+                description = paragraph.getText().split(":")[1].trim();
+                lecture.setDescription(description);
+                lectureRepository.save(lecture);
+            }
             if (innerText.contains("img")) {
                 List<WebElement> imgs = paragraph.findElements(By.tagName("img"));
                 System.out.println("imgs.size: " + imgs.size());
@@ -198,9 +243,8 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.getStatus().equals("N")) return true;
-        else if (lecture.getStatus().equals("P") && lectureStatus.equals("신청마감")) {
-            lecture.setStatus("N");
+        else if (lecture.isStatus() && lectureStatus.equals("신청마감")) {
+            lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }

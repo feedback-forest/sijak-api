@@ -7,13 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class MyPageParam {
+public class NicknameRequest {
 
-    String nickname;
-
-    String address;
+    private String nickname;
 
 }

@@ -13,7 +13,7 @@ public class LoginFailException extends RuntimeException {
 
     public LoginFailException(String message, ErrorCode errorCode) {
         super(message);
-        log.info("IdNotExistException -> message: {}, errorCode: {}", message, errorCode);
+        log.info("LoginFailException -> message: {}, errorCode: {}", message, errorCode);
         this.errorCode = errorCode;
     }
 

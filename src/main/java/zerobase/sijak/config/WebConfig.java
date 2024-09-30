@@ -30,8 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/docs/");
 
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/");
+                .addResourceLocations("classpath:/");
+
     }
-
-
 }

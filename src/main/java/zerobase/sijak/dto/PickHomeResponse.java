@@ -1,5 +1,6 @@
 package zerobase.sijak.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,12 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class LectureHomeResponse {
+public class PickHomeResponse {
 
     private Integer id;
+
+    private Integer view;
 
     private String thumbnail;
 
@@ -36,7 +39,5 @@ public class LectureHomeResponse {
     private String address;
 
     private String link;
-
-    private boolean heart;
 
 }

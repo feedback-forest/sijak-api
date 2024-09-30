@@ -21,7 +21,7 @@ public class Career {
 
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "teacher_id")
     @JsonIgnore
     private Teacher teacher;

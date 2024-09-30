@@ -1,5 +1,7 @@
 package zerobase.sijak.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +14,17 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import zerobase.sijak.SijakApplication;
+import zerobase.sijak.dto.GeoInfo;
 import zerobase.sijak.dto.MyPageParam;
+import zerobase.sijak.dto.MyPageResponse;
+import zerobase.sijak.dto.NicknameRequest;
 import zerobase.sijak.dto.kakao.*;
+import zerobase.sijak.exception.AlreadyNicknameExistException;
 import zerobase.sijak.exception.EmailNotExistException;
 import zerobase.sijak.exception.ErrorCode;
+import zerobase.sijak.exception.InvalidNicknameException;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.jwt.KakaoUserService;
 import zerobase.sijak.jwt.KakaoUser;
@@ -45,8 +53,11 @@ public class KakaoService {
     @Value("${user_info_uri}")
     private String USER_INFO_URI;
 
-    @Value("${logout_uri}")
-    private String LOGOUT_URI;
+    @Value("${account_logout_uri}")
+    private String ACCOUNT_LOGOUT_URI;
+
+    @Value("${kakao_logout_url}")
+    private String KAKAO_LOGOUT_URL;
 
     @Value("${logout_redirect_url}")
     private String LOGOUT_REDIRECT_URI;
@@ -55,6 +66,7 @@ public class KakaoService {
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
     private final MemberRepository memberRepository;
+    private WebClient.Builder webClientBuilder;
     private static final Logger logger = LoggerFactory.getLogger(SijakApplication.class);
 
     public ResponseDTO createPrivateToken(String code) {
@@ -104,7 +116,8 @@ public class KakaoService {
                     .name(profile.getKakao_account().getName())
                     .email(profile.getKakao_account().getEmail())
                     .gender(profile.getKakao_account().getGender())
-                    .ageRange(profile.getKakao_account().getAge_range()).build();
+                    .ageRange(profile.getKakao_account().getAge_range())
+                    .phoneNumber(profile.getKakao_account().getPhone_number()).build();
 
             boolean isAlreadySaved = alreadySavedUserJudge(kakaoUserInfo.getEmail());
 
@@ -122,26 +135,6 @@ public class KakaoService {
         return null;
     }
 
-    public String logoutFromKakao() {
-
-        String BASE_URL = "https://kauth.kakao.com";
-
-        WebClient wc = WebClient.create(LOGOUT_URI);
-
-        log.info("wc = {}", wc);
-        String res = wc.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("client_id", CLIENT_ID)
-                        .queryParam("logout_redirect_uri", LOGOUT_REDIRECT_URI)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        log.info("rse = {}", res);
-        return res;
-    }
-
 
     private boolean alreadySavedUserJudge(String email) {
 
@@ -150,7 +143,11 @@ public class KakaoService {
     }
 
 
-    public Member getMyPage(String token) {
+    public MyPageResponse getMyPage(String token) {
+
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
@@ -161,12 +158,127 @@ public class KakaoService {
             throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
 
-        return memberRepository.findByAccountEmail(claims.getSubject());
+
+        MyPageResponse myPageResponse = MyPageResponse.builder()
+                .nickname(member.getProfileNickname())
+                .location(member.getAddress())
+                .email(member.getAccountEmail())
+                .phoneNumber(member.getPhoneNumber())
+                .birth(member.getBirth())
+                .gender(member.getGender()).build();
+
+        return myPageResponse;
     }
 
 
     // 위치 기반으로 데이터를 저장 -> 수정 필요
-    public Member updateMyPage(MyPageParam myPageParam) {
-        return new Member();
+    public void updateMyPage(String token, MyPageParam myPageParam) {
+
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        member.setProfileNickname(myPageParam.getNickname());
+        member.setAddress(myPageParam.getAddress());
+
+        memberRepository.save(member);
+    }
+
+
+    public void validateNickname(NicknameRequest nicknameRequest) {
+        String nickname = nicknameRequest.getNickname();
+
+        if (nickname == null || nickname.isEmpty())
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (nickname.length() < 2 || nickname.length() > 12)
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (memberRepository.existsByProfileNickname(nickname))
+            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+    }
+
+    public void setNickname(String token, NicknameRequest nicknameRequest) {
+
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String nickname = nicknameRequest.getNickname();
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        validateNickname(NicknameRequest.builder().nickname(nickname).build());
+
+        member.setProfileNickname(nickname);
+        memberRepository.save(member);
+    }
+
+    public void updateAddress(String token, double longitude, double latitude) throws JsonProcessingException {
+        if (token == null || token.isEmpty()) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        member.setLongitude(longitude);
+        member.setLatitude(latitude);
+        String address = getNewAddress(longitude, latitude);
+        member.setAddress(address);
+
+        memberRepository.save(member);
+    }
+
+    private String getNewAddress(double longitude, double latitude) throws JsonProcessingException {
+        String kakaoGeo = "/v2/local/geo/coord2address.json";
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://dapi.kakao.com").build();
+
+        Mono<String> stringMono = webClient.get()
+                .uri(uribuilder -> uribuilder
+                        .path(kakaoGeo)
+                        .queryParam("x", longitude)
+                        .queryParam("y", latitude)
+                        .queryParam("input_coord", "WGS84")
+                        .build())
+                .header("Authorization", "KakaoAK " + CLIENT_ID)
+                .retrieve()
+                .bodyToMono(String.class);
+
+        String response = stringMono.block();
+        log.info("response : {}", response);
+        ObjectMapper objectMapper = new ObjectMapper();
+        GeoInfo geoInfo = objectMapper.readValue(response, GeoInfo.class);
+
+        if (geoInfo != null && !geoInfo.documents.isEmpty()) {
+            log.info("getInfo.documents.get(0) = {}", geoInfo.documents.get(0));
+            String[] longAddress = geoInfo.documents.get(0).address.address_name.split(" ");
+            return longAddress[0] + " " + longAddress[1];
+        }
+
+        return "";
     }
 }
