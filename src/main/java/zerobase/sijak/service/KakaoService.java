@@ -53,15 +53,6 @@ public class KakaoService {
     @Value("${user_info_uri}")
     private String USER_INFO_URI;
 
-    @Value("${account_logout_uri}")
-    private String ACCOUNT_LOGOUT_URI;
-
-    @Value("${kakao_logout_url}")
-    private String KAKAO_LOGOUT_URL;
-
-    @Value("${logout_redirect_url}")
-    private String LOGOUT_REDIRECT_URI;
-
     private final JwtTokenProvider jwtTokenProvider;
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
@@ -174,7 +165,7 @@ public class KakaoService {
     // 위치 기반으로 데이터를 저장 -> 수정 필요
     public void updateMyPage(String token, MyPageParam myPageParam) {
 
-        if (token == null || token.isEmpty()) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
 

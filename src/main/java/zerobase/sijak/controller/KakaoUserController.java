@@ -18,7 +18,7 @@ public class KakaoUserController {
 
     private final KakaoService kakaoService;
 
-    @GetMapping("/login/oauth2/code/kakao")
+    @GetMapping("/login/callback")
     public ResponseEntity<HttpResponse> getToken(@RequestParam("code") String code) {
         log.info("get token");
         ResponseDTO responseDTO = kakaoService.createPrivateToken(code);
@@ -58,7 +58,7 @@ public class KakaoUserController {
     }
 
     @PatchMapping("/api/mypage")
-    public ResponseEntity<HttpResponse> updateMyPage(@RequestParam("Authorization") String token, @RequestBody @Valid MyPageRequest myPageRequest) {
+    public ResponseEntity<HttpResponse> updateMyPage(@RequestParam("Authorization") String token, @RequestBody MyPageRequest myPageRequest) {
 
         MyPageParam myPageParam = MyPageParam.builder()
                 .nickname(myPageRequest.getNickname())
