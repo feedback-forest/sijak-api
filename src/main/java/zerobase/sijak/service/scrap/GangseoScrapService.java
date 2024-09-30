@@ -132,7 +132,7 @@ public class GangseoScrapService {
                                     .endDate(endDate)
                                     .division("정기 클래스")
                                     .view(0)
-                                    .status("P")
+                                    .status(true)
                                     .latitude(37.5663709)
                                     .longitude(126.8424769)
                                     .centerName("서울시 50+강서50플러스센터")
@@ -278,9 +278,8 @@ public class GangseoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.getStatus().equals("N")) return true;
-        else if (lecture.getStatus().equals("P") && !lectureStatus.equals("수강신청")) {
-            lecture.setStatus("N");
+        else if (lecture.isStatus() && !lectureStatus.equals("수강신청")) {
+            lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }

@@ -3,8 +3,12 @@ package zerobase.sijak.service;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zerobase.sijak.dto.LectureHomeResponse;
 import zerobase.sijak.exception.*;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.persist.domain.Heart;
@@ -14,8 +18,8 @@ import zerobase.sijak.persist.repository.HeartRepository;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,8 +37,8 @@ public class HeartService {
         return heartRepository.existsByLectureIdAndMemberId(lectureId, memberId);
     }
 
-    public List<Lecture> readHearts(String token) {
-        if (token == null || token.isEmpty()) {
+    public Slice<LectureHomeResponse> readHearts(String token, Pageable pageable) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
@@ -44,11 +48,29 @@ public class HeartService {
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
 
-        List<Heart> hearts = heartRepository.findAllByMemberId(member.getId());
-        return hearts.stream()
-                .map(Heart::getLecture)
-                .collect(Collectors.toList());
+        Slice<Lecture> lectures = heartRepository.findLecturesByMemberId(member.getId(), pageable);
 
+        List<LectureHomeResponse> lecturesResponse = lectures.getContent().stream()
+                .map(lecture -> {
+                    boolean isHeart = isHearted(lecture.getId(), member.getId());
+                    String[] addressList = lecture.getAddress().split(" ");
+                    String shortAddress = addressList[0] + " " + addressList[1];
+                    return LectureHomeResponse.builder()
+                            .id(lecture.getId())
+                            .name(lecture.getName())
+                            .thumbnail(lecture.getThumbnail())
+                            .time(lecture.getTime())
+                            .startDate(lecture.getStartDate())
+                            .endDate(lecture.getEndDate())
+                            .dayOfWeek(lecture.getDayOfWeek())
+                            .target(lecture.getTarget())
+                            .status(lecture.isStatus())
+                            .address(shortAddress)
+                            .link(lecture.getLink())
+                            .heart(isHeart).build();
+                }).toList();
+
+        return new SliceImpl<>(lecturesResponse, pageable, lectures.hasNext());
     }
 
     public void appendHeart(String token, int lectureId) {

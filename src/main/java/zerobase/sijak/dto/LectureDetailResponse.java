@@ -13,8 +13,11 @@ import lombok.NoArgsConstructor;
 public class LectureDetailResponse {
 
     private Integer id;
+
     private String name;
+
     private String description;
+
     private Integer price;
 
     @JsonProperty("day_of_week")
@@ -32,7 +35,7 @@ public class LectureDetailResponse {
 
     private Double longitude;
 
-    private String status;
+    private boolean status;
 
     private String thumbnail;
 
@@ -65,6 +68,8 @@ public class LectureDetailResponse {
 
     @JsonProperty("instructor_name")
     private String instructorName;
+
+    private String distance;
 
 
 }
