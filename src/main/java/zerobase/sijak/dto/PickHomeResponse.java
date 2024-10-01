@@ -27,6 +27,8 @@ public class PickHomeResponse {
 
     private boolean status;
 
+    private boolean heart;
+
     @JsonProperty("start_date")
     private String startDate;
 

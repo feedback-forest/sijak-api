@@ -28,13 +28,13 @@ public class LectureController {
     @GetMapping("/home")
     public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
                                                  @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "10") int size,
+                                                 @RequestParam(defaultValue = "4") int size,
                                                  @RequestParam("longitude") double longitude,
                                                  @RequestParam("latitude") double latitude) {
 
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, longitude, latitude);
-        List<PickHomeResponse> pickClasses = lectureService.getPickClasses();
+        List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", lectures.getContent());
@@ -47,10 +47,11 @@ public class LectureController {
     @GetMapping("/lectures")
     public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
                                                      @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size) {
+                                                     @RequestParam(defaultValue = "9") int size,
+                                                     @RequestParam("longitude") double longitude,
+                                                     @RequestParam("latitude") double latitude) {
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
-        List<PickHomeResponse> pickClasses = lectureService.getPickClasses();
+        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable, longitude, latitude);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", lectures.getContent());

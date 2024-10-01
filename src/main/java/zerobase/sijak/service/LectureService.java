@@ -98,10 +98,10 @@ public class LectureService {
         }
     }
 
-    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable) {
+    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable, double longitude, double latitude) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readLectues -> 회원이 아닙니다.");
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -133,7 +133,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
@@ -169,9 +169,11 @@ public class LectureService {
         lecture = lectureRepository.save(lecture);
         // 회원이 아닌 경우 -> 찜 정보가 노출이 되지 않는다.
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude());
-            String estimatedTime = String.valueOf(dist * 1000) + "분 이내";
-            String distance = String.valueOf(dist) + "km";
+            log.info("회원이 아닙니다.");
+            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
+            dist = Math.round(dist * 10.0) / 10.0;
+            String distance = String.valueOf(dist) + "m";
+            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
             PeriodInfo periodInfo = new PeriodInfo(lecture.getStartDate(), lecture.getEndDate(), lecture.getTotal());
             List<PeriodInfo> periodInfoList = new ArrayList<>();
             periodInfoList.add(periodInfo);
@@ -218,15 +220,16 @@ public class LectureService {
             String jwtToken = token.substring(7);
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
-
+            log.info("회원입니다. email: {}", claims.getSubject());
             Member member = memberRepository.findByAccountEmail(claims.getSubject());
             if (member == null) {
                 throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
             }
 
-            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude());
-            String estimatedTime = String.valueOf(dist * 1000) + "분 이내";
-            String distance = String.valueOf(dist) + "km";
+            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
+            dist = Math.round(dist * 10.0) / 10.0;
+            String distance = String.valueOf(dist) + "m";
+            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
             PeriodInfo periodInfo = new PeriodInfo(lecture.getStartDate(), lecture.getEndDate(), lecture.getTotal());
             List<PeriodInfo> periodInfoList = new ArrayList<>();
             periodInfoList.add(periodInfo);
@@ -270,23 +273,59 @@ public class LectureService {
         }
     }
 
-    public List<PickHomeResponse> getPickClasses() {
-        List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+    public List<PickHomeResponse> getPickClasses(String token) {
 
-        return topLectures.stream()
-                .map(lecture -> PickHomeResponse.builder()
-                        .id(lecture.getId())
-                        .view(lecture.getView())
-                        .name(lecture.getName())
-                        .time(lecture.getTime())
-                        .thumbnail(lecture.getThumbnail())
-                        .startDate(lecture.getStartDate())
-                        .endDate(lecture.getEndDate())
-                        .dayOfWeek(lecture.getDayOfWeek())
-                        .status(lecture.isStatus())
-                        .target(lecture.getTarget())
-                        .link(lecture.getLink())
-                        .build()).collect(Collectors.toList());
+        // 회원이 아닌 경우
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+
+            List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+
+            return topLectures.stream()
+                    .map(lecture -> PickHomeResponse.builder()
+                            .id(lecture.getId())
+                            .view(lecture.getView())
+                            .name(lecture.getName())
+                            .time(lecture.getTime())
+                            .thumbnail(lecture.getThumbnail())
+                            .startDate(lecture.getStartDate())
+                            .endDate(lecture.getEndDate())
+                            .dayOfWeek(lecture.getDayOfWeek())
+                            .status(lecture.isStatus())
+                            .target(lecture.getTarget())
+                            .link(lecture.getLink())
+                            .heart(false)
+                            .build()).collect(Collectors.toList());
+
+        }
+        // 회원이 아닌 경우
+        else {
+            String jwtToken = token.substring(7);
+            Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+            log.info("readLectures: token not null");
+
+            Member member = memberRepository.findByAccountEmail(claims.getSubject());
+            if (member == null) {
+                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            }
+
+            List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+
+            return topLectures.stream()
+                    .map(lecture -> PickHomeResponse.builder()
+                            .id(lecture.getId())
+                            .view(lecture.getView())
+                            .name(lecture.getName())
+                            .time(lecture.getTime())
+                            .thumbnail(lecture.getThumbnail())
+                            .startDate(lecture.getStartDate())
+                            .endDate(lecture.getEndDate())
+                            .dayOfWeek(lecture.getDayOfWeek())
+                            .status(lecture.isStatus())
+                            .target(lecture.getTarget())
+                            .link(lecture.getLink())
+                            .heart(heartService.isHearted(lecture.getId(), member.getId()))
+                            .build()).collect(Collectors.toList());
+        }
     }
 
 
