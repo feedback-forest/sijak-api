@@ -8,10 +8,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import zerobase.sijak.dto.HttpResponse;
-import zerobase.sijak.dto.LectureAndPickResponse;
-import zerobase.sijak.dto.LectureHomeResponse;
-import zerobase.sijak.dto.PickHomeResponse;
+import zerobase.sijak.dto.*;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.service.LectureService;
 
@@ -63,10 +60,14 @@ public class LectureController {
     }
 
 
-    // Map.of("data", lectures.getContent(), "hasNext", lectures.hasNext()
     @GetMapping("/lectures/{id}")
-    public ResponseEntity<HttpResponse> readLecture(@PathVariable int id) {
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureService.readLecture(id)));
+    public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id,
+                                                    @RequestParam("latitude") double latitude,
+                                                    @RequestParam("longitude") double longitude) {
+
+        LectureDetailResponse lectureDetailResponse = lectureService.readLecture(token, id, latitude, longitude);
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureDetailResponse));
     }
 
 

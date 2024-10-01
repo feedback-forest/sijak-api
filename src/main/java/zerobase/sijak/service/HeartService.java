@@ -99,7 +99,7 @@ public class HeartService {
     }
 
     public void deleteHeart(String token, int lectureId) {
-        if (token == null || token.isEmpty()) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
