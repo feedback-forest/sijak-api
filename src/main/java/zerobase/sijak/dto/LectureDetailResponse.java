@@ -33,10 +33,6 @@ public class LectureDetailResponse {
 
     private String location;
 
-    private Double latitude;
-
-    private Double longitude;
-
     private boolean status;
 
     private String thumbnail;
@@ -48,7 +44,7 @@ public class LectureDetailResponse {
     @JsonProperty("hosted_by")
     private String hostedBy;
 
-    private String period;
+    private List<PeriodInfo> period;
 
     private String division;
 
@@ -69,12 +65,11 @@ public class LectureDetailResponse {
     private String need;
 
     @JsonProperty("instructor_name")
-    private List<String> instructorName;
-
-    @JsonProperty("instructor_history")
-    private List<String> instructorHistory;
+    private List<TeacherInfo> instructorName;
 
     private String distance;
+
+    private String estimatedTime;
 
 
 }

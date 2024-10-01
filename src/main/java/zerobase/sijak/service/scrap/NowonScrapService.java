@@ -42,7 +42,7 @@ public class NowonScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    // @Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
