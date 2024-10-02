@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import zerobase.sijak.persist.domain.Image;
 
 import java.util.List;
 
@@ -48,6 +49,9 @@ public class LectureDetailResponse {
 
     private String division;
 
+    @JsonProperty("d_day")
+    private String dDay;
+
     private String category;
 
     private String condition;
@@ -70,6 +74,8 @@ public class LectureDetailResponse {
     private String distance;
 
     private String estimatedTime;
+
+    private List<Image> images;
 
 
 }

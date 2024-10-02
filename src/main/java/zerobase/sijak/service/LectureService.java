@@ -19,6 +19,10 @@ import zerobase.sijak.persist.domain.Member;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -185,6 +189,16 @@ public class LectureService {
                 return new TeacherInfo(teacher.getId(), teacher.getName(), careerInfoList);
             }).toList();
 
+            LocalDateTime lastDate = lecture.getDeadline();
+            LocalDateTime curDate = LocalDateTime.now();
+            String deadline;
+            if (lastDate == null) {
+                lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate) - 1);
+            }
+            else {
+                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate));
+            }
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -203,12 +217,14 @@ public class LectureService {
                     .division(lecture.getDivision())
                     .condition(lecture.getTarget())
                     .category("미정")
+                    .dDay(deadline)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .textBookName(lecture.getTextBookName())
                     .textBookPrice(lecture.getTextBookPrice())
                     .instructorName(teacherInfoList)
                     .need(lecture.getNeed())
+                    .images(lecture.getImageUrls())
                     .heart(false)
                     .distance(distance)
                     .estimatedTime(estimatedTime)
@@ -241,6 +257,17 @@ public class LectureService {
                 return new TeacherInfo(teacher.getId(), teacher.getName(), careerInfoList);
             }).toList();
 
+            LocalDateTime lastDate = lecture.getDeadline();
+            LocalDateTime curDate = LocalDateTime.now();
+            String deadline;
+            if (lastDate == null) {
+                lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate) - 1);
+            }
+            else {
+                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate));
+            }
+
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -258,17 +285,20 @@ public class LectureService {
                     .hostedBy(lecture.getCenterName())
                     .division(lecture.getDivision())
                     .condition(lecture.getTarget())
+                    .dDay(deadline)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .category("미정")
                     .textBookName(lecture.getTextBookName())
                     .textBookPrice(lecture.getTextBookPrice())
                     .instructorName(teacherInfoList)
+                    .images(lecture.getImageUrls())
                     .need(lecture.getNeed())
                     .heart(heartService.isHearted(id, member.getId()))
                     .distance(distance)
                     .estimatedTime(estimatedTime)
                     .build();
+
             return lectureDetailResponse;
         }
     }
