@@ -29,11 +29,12 @@ public class LectureController {
     public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "4") int size,
-                                                 @RequestParam("longitude") double longitude,
-                                                 @RequestParam("latitude") double latitude) {
+                                                 @RequestBody PositionInfo positionInfo) {
 
+        double latitude = positionInfo.getLatitude();
+        double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, longitude, latitude);
+        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, latitude, longitude);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
 
         Map<String, Object> totalList = new HashMap<>();
@@ -41,15 +42,17 @@ public class LectureController {
         totalList.put("hasNext", lectures.hasNext());
         totalList.put("pickClasses", pickClasses);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
 
     @GetMapping("/lectures")
     public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
                                                      @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "9") int size,
-                                                     @RequestParam("longitude") double longitude,
-                                                     @RequestParam("latitude") double latitude) {
+                                                     @RequestBody PositionInfo positionInfo) {
+
+        double latitude = positionInfo.getLatitude();
+        double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable, longitude, latitude);
 
@@ -57,18 +60,19 @@ public class LectureController {
         totalList.put("data", lectures.getContent());
         totalList.put("hasNext", lectures.hasNext());
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
 
 
     @GetMapping("/lectures/{id}")
     public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id,
-                                                    @RequestParam("latitude") double latitude,
-                                                    @RequestParam("longitude") double longitude) {
+                                                    @RequestBody PositionInfo positionInfo) {
 
+        double latitude = positionInfo.getLatitude();
+        double longitude = positionInfo.getLongitude();
         LectureDetailResponse lectureDetailResponse = lectureService.readLecture(token, id, latitude, longitude);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), lectureDetailResponse));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), lectureDetailResponse));
     }
 
 

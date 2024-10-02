@@ -10,21 +10,21 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public class HttpResponse<T> {
 
-    private HttpStatus status;
+    private int status;
     private String message;
     private T data;
 
-    public HttpResponse(final HttpStatus status, final String message) {
+    public HttpResponse(final int status, final String message) {
         this.status = status;
         this.message = message;
         this.data = null;
     }
 
-    public static <T> HttpResponse<T> res(final HttpStatus status, final String message) {
+    public static <T> HttpResponse<T> res(final int status, final String message) {
         return res(status, message, null);
     }
 
-    public static <T> HttpResponse<T> res(final HttpStatus status, final String message, final T data) {
+    public static <T> HttpResponse<T> res(final int status, final String message, final T data) {
         return HttpResponse.<T>builder()
                 .status(status)
                 .message(message)

@@ -1,7 +1,6 @@
 package zerobase.sijak.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ public class KakaoUserController {
         log.info("get token");
         ResponseDTO responseDTO = kakaoService.createPrivateToken(code);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), responseDTO));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), responseDTO));
     }
 
     @PostMapping("/api/nickname/validate")
@@ -31,7 +30,7 @@ public class KakaoUserController {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
         kakaoService.validateNickname(nicknameRequest);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
     @PostMapping("/api/nickname")
@@ -40,31 +39,31 @@ public class KakaoUserController {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
         kakaoService.setNickname(token, nicknameRequest);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
     @GetMapping("/api/mypage")
     public ResponseEntity<HttpResponse> getMyPage(@RequestHeader("Authorization") String token) {
         MyPageResponse myPageResponse = kakaoService.getMyPage(token);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), myPageResponse));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), myPageResponse));
     }
 
     @PatchMapping("/api/mypage/address")
     public ResponseEntity<HttpResponse> updateAddress(@RequestHeader("Authorization") String token,
-                                                      @RequestParam("longitude") double longitude,
-                                                      @RequestParam("latitude") double latitude) throws JsonProcessingException {
-        kakaoService.updateAddress(token, longitude, latitude);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+                                                      @RequestBody PositionInfo positionInfo) throws JsonProcessingException {
+        kakaoService.updateAddress(token, positionInfo);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
     @PatchMapping("/api/mypage")
-    public ResponseEntity<HttpResponse> updateMyPage(@RequestParam("Authorization") String token, @RequestBody MyPageRequest myPageRequest) {
+    public ResponseEntity<HttpResponse> updateMyPage(@RequestHeader("Authorization") String token,
+                                                     @RequestBody MyPageRequest myPageRequest) {
 
         MyPageParam myPageParam = MyPageParam.builder()
                 .nickname(myPageRequest.getNickname())
                 .address(myPageRequest.getAddress()).build();
 
         kakaoService.updateMyPage(token, myPageParam);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 }

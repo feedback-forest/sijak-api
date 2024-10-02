@@ -42,7 +42,7 @@ public class MapoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
@@ -95,7 +95,7 @@ public class MapoScrapService {
                             break;
                         case 4:
                             String[] date = cols.get(j).getText().split("~");
-                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss");
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                             if (date.length == 1) {
                                 log.info("end = {}", date[0].trim());
                                 LocalDateTime end = LocalDateTime.parse(date[0].trim() + "T00:00:00", formatter);
@@ -141,11 +141,22 @@ public class MapoScrapService {
                                     .capacity(capacity)
                                     .status(true)
                                     .deadline(deadline)
+                                    .link(href)
+                                    .startDate(startDate)
+                                    .endDate(endDate)
                                     .view(0)
                                     .division("정기 클래스")
                                     .latitude(37.556445)
+                                    .need("")
+                                    .textBookName("")
+                                    .textBookPrice("")
+                                    .thumbnail("")
                                     .longitude(126.946607)
                                     .centerName("마포시니어클럽")
+                                    .total(-1)
+                                    .certification("")
+                                    .description("")
+                                    .dayOfWeek("")
                                     .address("서울특별시 마포구 동교로8길 58")
                                     .build();
 
@@ -199,26 +210,32 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findById(lId)
                 .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
 
+        log.info("222");
+        WebElement div = driver.findElement(By.cssSelector("#sit_inf_explan"));
+        List<WebElement> paragraphs = div.findElements(By.tagName("p"));
+        log.info("333");
 
-        List<WebElement> paragraphs = driver.findElements(By.cssSelector("#sit_inf_explan > div > p"));
 
         String target = "", location = "", description = "";
         for (WebElement paragraph : paragraphs) {
             String innerText = paragraph.getAttribute("innerHTML");
             if (innerText.contains("대상")) {
+                log.info("대상");
                 target = paragraph.getText().split(":")[1].trim();
                 lecture.setTarget(target);
-                lectureRepository.save(lecture);
+                lecture = lectureRepository.save(lecture);
             }
             if (innerText.contains("장소")) {
+                log.info("장소");
                 location = paragraph.getText().split(":")[1].trim();
                 lecture.setLocation(location);
-                lectureRepository.save(lecture);
+                lecture = lectureRepository.save(lecture);
             }
             if (innerText.contains("내용")) {
+                log.info("내용");
                 description = paragraph.getText().split(":")[1].trim();
                 lecture.setDescription(description);
-                lectureRepository.save(lecture);
+                lecture = lectureRepository.save(lecture);
             }
             if (innerText.contains("img")) {
                 List<WebElement> imgs = paragraph.findElements(By.tagName("img"));

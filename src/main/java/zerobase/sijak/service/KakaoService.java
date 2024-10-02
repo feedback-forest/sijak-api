@@ -16,10 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import zerobase.sijak.SijakApplication;
-import zerobase.sijak.dto.GeoInfo;
-import zerobase.sijak.dto.MyPageParam;
-import zerobase.sijak.dto.MyPageResponse;
-import zerobase.sijak.dto.NicknameRequest;
+import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.*;
 import zerobase.sijak.exception.AlreadyNicknameExistException;
 import zerobase.sijak.exception.EmailNotExistException;
@@ -220,7 +217,7 @@ public class KakaoService {
         memberRepository.save(member);
     }
 
-    public void updateAddress(String token, double longitude, double latitude) throws JsonProcessingException {
+    public void updateAddress(String token, PositionInfo positionInfo) throws JsonProcessingException {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
@@ -233,6 +230,9 @@ public class KakaoService {
         if (member == null) {
             throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
+
+        double latitude = positionInfo.getLatitude();
+        double longitude = positionInfo.getLongitude();
 
         member.setLongitude(longitude);
         member.setLatitude(latitude);

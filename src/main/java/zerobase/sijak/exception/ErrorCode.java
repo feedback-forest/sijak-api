@@ -16,7 +16,8 @@ public enum ErrorCode {
     HEART_REMOVE_FAILED(404, "찜클래스 삭제에 실패했습니다.", " HEART REMOVE FAILED"),
     INVALID_NICKNAME(404, "띄어쓰기 없이 2자 ~ 12자까지 가능해요.", " INVALID NICKNAME"),
     ALREADY_NICKNAME_EXIST(404, "이미 사용중인 닉네임이에요. 다른 닉네임을 적어주세요.", " ALREADY NICKNAME EXIST"),
-    ADDRESS_PROCESSING_FAILED(500, "사용자 주소를 얻어오는 데 실패했습니다.", "ADDRESS PROCESSING FAILED");
+    ADDRESS_PROCESSING_FAILED(500, "사용자 주소를 얻어오는 데 실패했습니다.", "ADDRESS PROCESSING FAILED"),
+    CRAWLING_FAILED(500, "크롤링 작업 도중 실패했습니다.", "CRAWLING FAILED");
 
     private int status;
     private String message;

@@ -34,7 +34,7 @@ public class HeartController {
         totalList.put("data", hearts.getContent());
         totalList.put("hasNext", hearts.hasNext());
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), totalList));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
 
 
@@ -43,7 +43,7 @@ public class HeartController {
 
         heartService.appendHeart(token, lectureId);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
     @DeleteMapping("/hearts")
@@ -51,7 +51,7 @@ public class HeartController {
 
         heartService.deleteHeart(token, lectureId);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK, HttpStatus.OK.toString(), "success"));
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
 }
