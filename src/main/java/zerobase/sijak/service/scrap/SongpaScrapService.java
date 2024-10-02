@@ -40,7 +40,7 @@ public class SongpaScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+   // @Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
@@ -128,10 +128,10 @@ public class SongpaScrapService {
                                     .location(location)
                                     .price(price)
                                     .view(0)
-                                    .latitude(37.556445)
-                                    .longitude(126.946607)
-                                    .address("서울특별시 마포구 동교로8길 58")
-                                    .centerName("마포시니어클럽")
+                                    .latitude(37.505900)
+                                    .longitude(127.109778)
+                                    .address("서울특별시 송파구 백제고분로 42길 5")
+                                    .centerName("송파여성문화회관")
                                     .capacity(capacity)
                                     .division("정기 클래스")
                                     .status(true)
