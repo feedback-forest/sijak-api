@@ -50,7 +50,7 @@ public class LectureDetailResponse {
     private String division;
 
     @JsonProperty("d_day")
-    private String dDay;
+    private long dDay;
 
     private String category;
 

@@ -1,7 +1,6 @@
 package zerobase.sijak.service;
 
 import io.jsonwebtoken.Claims;
-import jdk.jfr.Period;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -192,13 +191,15 @@ public class LectureService {
             LocalDateTime lastDate = lecture.getDeadline();
             LocalDateTime curDate = LocalDateTime.now();
             String deadline;
+            long dDay;
             if (lastDate == null) {
                 lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
-                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate) - 1);
             }
-            else {
-                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate));
+            dDay = ChronoUnit.DAYS.between(lastDate, curDate);
+            if (dDay < 0) {
+                lecture.setStatus(false); // D-day가 끝났으면 마감처리
             }
+
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -217,7 +218,7 @@ public class LectureService {
                     .division(lecture.getDivision())
                     .condition(lecture.getTarget())
                     .category("미정")
-                    .dDay(deadline)
+                    .dDay(dDay)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .textBookName(lecture.getTextBookName())
@@ -260,12 +261,13 @@ public class LectureService {
             LocalDateTime lastDate = lecture.getDeadline();
             LocalDateTime curDate = LocalDateTime.now();
             String deadline;
+            long dDay;
             if (lastDate == null) {
                 lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
-                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate) - 1);
             }
-            else {
-                deadline = "D - " + String.valueOf(ChronoUnit.DAYS.between(lastDate, curDate));
+            dDay = ChronoUnit.DAYS.between(lastDate, curDate);
+            if (dDay < 0) {
+                lecture.setStatus(false); // D-day가 끝났으면 마감처리
             }
 
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
@@ -285,7 +287,7 @@ public class LectureService {
                     .hostedBy(lecture.getCenterName())
                     .division(lecture.getDivision())
                     .condition(lecture.getTarget())
-                    .dDay(deadline)
+                    .dDay(dDay)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .category("미정")
