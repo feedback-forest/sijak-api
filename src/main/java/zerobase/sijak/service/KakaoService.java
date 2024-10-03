@@ -80,6 +80,7 @@ public class KakaoService {
 
         log.info("카카오 Access 토큰 발급 완료 !");
 
+        log.info("Access toke = {}", oauthToken.getAccess_token());
         log.info("카카오 Access 토큰 활용 -> 사용자 정보 조회");
 
         KakaoProfile profile = wc
@@ -89,6 +90,9 @@ public class KakaoService {
                 .retrieve()
                 .bodyToMono(KakaoProfile.class)
                 .block();
+
+//        curl -X GET "https://kapi.kakao.com/v2/user/me" \
+//        -H "Authorization: Bearer pljulYDZpXd4cu1EBozxXe9t-Ohx2NZzAAAAAQo9dGgAAAGSUT2MxqbXH4eeWQ3B"
 
 
         log.info("카카오 Access 토큰 활용 -> 사용자 정보 조회 성공");

@@ -25,7 +25,7 @@ public class LectureController {
 
     private final LectureService lectureService;
 
-    @GetMapping("/home")
+    @PostMapping("/home")
     public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "4") int size,
@@ -45,7 +45,7 @@ public class LectureController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
 
-    @GetMapping("/lectures")
+    @PostMapping("/lectures")
     public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
                                                      @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "9") int size,
@@ -64,7 +64,7 @@ public class LectureController {
     }
 
 
-    @GetMapping("/lectures/{id}")
+    @PostMapping("/lectures/{id}")
     public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id,
                                                     @RequestBody PositionInfo positionInfo) {
 
