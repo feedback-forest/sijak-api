@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### personal info ###
-application.yml
 *.jpg
 *.sql
 *.log
+*.yml
