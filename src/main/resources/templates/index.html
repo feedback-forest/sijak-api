@@ -7,7 +7,7 @@
 <body>
 <h1>카카오 로그인</h1>
 
-<a href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=[[${CLIENT_ID}]]&redirect_uri=[[{REDIRECT_URI}]]">
+<a th:href="'https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=' + ${CLIENT_ID} + '&redirect_uri=' + ${REDIRECT_URI}">
     <img src="../static/img/kakao_login_medium_wide.png"></a>
 
 </body>

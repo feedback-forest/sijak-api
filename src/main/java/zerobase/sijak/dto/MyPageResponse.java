@@ -21,6 +21,9 @@ public class MyPageResponse {
     @JsonProperty("phone_number")
     private String phoneNumber;
 
+    @JsonProperty("age_range")
+    private String ageRange;
+
     private String birth;
 
     private String gender;

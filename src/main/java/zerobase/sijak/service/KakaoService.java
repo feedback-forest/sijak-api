@@ -18,10 +18,7 @@ import reactor.core.publisher.Mono;
 import zerobase.sijak.SijakApplication;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.*;
-import zerobase.sijak.exception.AlreadyNicknameExistException;
-import zerobase.sijak.exception.EmailNotExistException;
-import zerobase.sijak.exception.ErrorCode;
-import zerobase.sijak.exception.InvalidNicknameException;
+import zerobase.sijak.exception.*;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.jwt.KakaoUserService;
 import zerobase.sijak.jwt.KakaoUser;
@@ -91,10 +88,6 @@ public class KakaoService {
                 .bodyToMono(KakaoProfile.class)
                 .block();
 
-//        curl -X GET "https://kapi.kakao.com/v2/user/me" \
-//        -H "Authorization: Bearer pljulYDZpXd4cu1EBozxXe9t-Ohx2NZzAAAAAQo9dGgAAAGSUT2MxqbXH4eeWQ3B"
-
-
         log.info("카카오 Access 토큰 활용 -> 사용자 정보 조회 성공");
 
         log.info("사용자 정보 DB 저장 시작");
@@ -154,6 +147,7 @@ public class KakaoService {
         MyPageResponse myPageResponse = MyPageResponse.builder()
                 .nickname(member.getProfileNickname())
                 .location(member.getAddress())
+                .ageRange(member.getAgeRange())
                 .email(member.getAccountEmail())
                 .phoneNumber(member.getPhoneNumber())
                 .birth(member.getBirth())
@@ -244,6 +238,32 @@ public class KakaoService {
         member.setAddress(address);
 
         memberRepository.save(member);
+    }
+
+    public MyPageResponse getUserMypage(String token, int id) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByIdAndAccountEmail(id, claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("해당 유저의 정보가 없습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        MyPageResponse myPageResponse = MyPageResponse.builder()
+                .nickname(member.getProfileNickname())
+                .location(member.getAddress())
+                .ageRange(member.getAgeRange())
+                .email(member.getAccountEmail())
+                .phoneNumber(member.getPhoneNumber())
+                .birth(member.getBirth())
+                .gender(member.getGender()).build();
+
+        return myPageResponse;
     }
 
     private String getNewAddress(double longitude, double latitude) throws JsonProcessingException {
