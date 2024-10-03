@@ -67,4 +67,13 @@ public class KakaoUserController {
         kakaoService.updateMyPage(token, myPageParam);
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
+
+
+    @GetMapping("/api/user/{id}")
+    public ResponseEntity<HttpResponse> getUser(@RequestHeader("Authorization") String token, @PathVariable("id") int id) {
+
+        MyPageResponse myPageResponse = kakaoService.getUserMypage(token, id);
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), myPageResponse));
+    }
 }
