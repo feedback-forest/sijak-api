@@ -20,6 +20,7 @@ public class KakaoUserController {
     @GetMapping("/login/callback")
     public ResponseEntity<HttpResponse> getToken(@RequestParam("code") String code) {
         log.info("get token");
+        log.info("code: {}", code);
         ResponseDTO responseDTO = kakaoService.createPrivateToken(code);
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), responseDTO));

@@ -42,7 +42,7 @@ public class MapoScrapService {
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
