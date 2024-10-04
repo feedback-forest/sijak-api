@@ -33,6 +33,13 @@ public class LectureHomeResponse {
     @JsonProperty("day_of_week")
     private String dayOfWeek;
 
+    private double latitude;
+
+    private double longitude;
+
+    @JsonProperty("hosted_by")
+    private String hostedBy;
+
     private String address;
 
     private String link;
