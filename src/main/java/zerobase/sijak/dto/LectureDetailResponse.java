@@ -75,6 +75,10 @@ public class LectureDetailResponse {
 
     private String estimatedTime;
 
+    private double latitude;
+
+    private double longitude;
+
     private List<Image> images;
 
 
