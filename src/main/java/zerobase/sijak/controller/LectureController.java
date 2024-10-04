@@ -29,12 +29,13 @@ public class LectureController {
     public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "4") int size,
+                                                 @RequestParam(name = "dist") double dist,
                                                  @RequestBody PositionInfo positionInfo) {
 
         double latitude = positionInfo.getLatitude();
         double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, latitude, longitude);
+        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, latitude, longitude, dist);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
 
         Map<String, Object> totalList = new HashMap<>();
@@ -49,12 +50,13 @@ public class LectureController {
     public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
                                                      @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "9") int size,
+                                                     @RequestParam(name = "dist") double dist,
                                                      @RequestBody PositionInfo positionInfo) {
 
         double latitude = positionInfo.getLatitude();
         double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable, longitude, latitude);
+        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable, longitude, latitude, dist);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", lectures.getContent());
