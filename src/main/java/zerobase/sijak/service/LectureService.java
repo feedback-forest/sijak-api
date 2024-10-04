@@ -40,11 +40,11 @@ public class LectureService {
 
     private final double EARTH_RADIUS_KM = 6371.0;
 
-    public Slice<LectureHomeResponse> readHome(String token, Pageable pageable, double longitude, double latitude) {
+    public Slice<LectureHomeResponse> readHome(String token, Pageable pageable, double longitude, double latitude, double dist) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readHome -> 회원이 아닙니다.");
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -79,7 +79,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
@@ -107,10 +107,10 @@ public class LectureService {
         }
     }
 
-    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable, double longitude, double latitude) {
+    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable, double longitude, double latitude, double dist) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readLectues -> 회원이 아닙니다.");
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -145,7 +145,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, 0.5, pageable);
+            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
