@@ -9,6 +9,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,18 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
 import zerobase.sijak.exception.ErrorCode;
 import zerobase.sijak.exception.IdNotExistException;
-import zerobase.sijak.persist.domain.Career;
-import zerobase.sijak.persist.domain.Image;
-import zerobase.sijak.persist.domain.Lecture;
-import zerobase.sijak.persist.domain.Teacher;
-import zerobase.sijak.persist.repository.CareerRepository;
-import zerobase.sijak.persist.repository.ImageRepository;
-import zerobase.sijak.persist.repository.LectureRepository;
-import zerobase.sijak.persist.repository.TeacherRepository;
+import zerobase.sijak.persist.domain.*;
+import zerobase.sijak.persist.repository.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -39,9 +36,10 @@ public class SongpaScrapService {
     private final LectureRepository lectureRepository;
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
+    private final EducateRepository educateRepository;
 
     //@Scheduled(fixedRate = 10000000)
-    public void scrapMapo() throws InterruptedException {
+    public void scrapSongpa() throws InterruptedException {
 
         String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
         int capacity = 1, lId = -1, tId = -1, cId = -1;
@@ -51,6 +49,8 @@ public class SongpaScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -165,6 +165,8 @@ public class SongpaScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -213,6 +215,12 @@ public class SongpaScrapService {
             bookPrice = df.format(Integer.parseInt(textBookPrice));
         }
 
+        String date = driver.findElement(By.cssSelector("#mainsection > div > div > div > div > div.product.row > div.product-info.col-md-8.col-xs-12 > div > ul > li:nth-child(3)"))
+                .getText().split(":")[1].trim();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        log.info("end = {}", date.trim());
+        LocalDateTime deadline = LocalDateTime.parse(date + "T00:00:00", formatter);
         log.info("bookPrice : {}", bookPrice);
 
         lecture.setThumbnail(thumbnail.getAttribute("src"));
@@ -220,6 +228,7 @@ public class SongpaScrapService {
         lecture.setDescription(description);
         lecture.setStartDate(startDate.getText().substring(6));
         lecture.setTextBookName(textBookName);
+        lecture.setDeadline(deadline);
         lecture.setTextBookPrice(bookPrice + "원");
         lecture.setNeed(need);
         lecture.setCertification(certification);
@@ -250,6 +259,23 @@ public class SongpaScrapService {
 
             careerRepository.save(career);
         }
+        log.info("read educate content");
+
+        WebElement tab = driver.findElement(By.cssSelector("a[href='#tab002']"));
+        tab.click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tab002")));
+
+        List<WebElement> trGroup = driver.findElements(By.cssSelector("#tab002 > table > tbody > tr"));
+        Thread.sleep(1000);
+        for (WebElement tr : trGroup) {
+            List<WebElement> tds = tr.findElements(By.tagName("td"));
+            String content = tds.get(1).getText();
+            log.info("content : {}", content);
+
+            Educate educate = new Educate(lecture, content);
+            educateRepository.save(educate);
+        }
+
 
         log.info("상세 읽기 finish!");
         driver.close();

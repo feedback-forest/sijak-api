@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import zerobase.sijak.persist.domain.Image;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -80,6 +81,8 @@ public class LectureDetailResponse {
     private double longitude;
 
     private List<Image> images;
+
+    private Map<Integer, String> plan;
 
 
 }
