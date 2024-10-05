@@ -13,8 +13,10 @@ import zerobase.sijak.exception.EmailNotExistException;
 import zerobase.sijak.exception.ErrorCode;
 import zerobase.sijak.exception.IdNotExistException;
 import zerobase.sijak.jwt.JwtTokenProvider;
+import zerobase.sijak.persist.domain.Educate;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Member;
+import zerobase.sijak.persist.repository.EducateRepository;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
@@ -23,7 +25,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +43,7 @@ public class LectureService {
     private final MemberRepository memberRepository;
 
     private final double EARTH_RADIUS_KM = 6371.0;
+    private final EducateRepository educateRepository;
 
     public Slice<LectureHomeResponse> readHome(String token, Pageable pageable, double longitude, double latitude, double dist) {
 
@@ -193,6 +198,7 @@ public class LectureService {
             List<PeriodInfo> periodInfoList = new ArrayList<>();
             periodInfoList.add(periodInfo);
 
+            log.info("dist: {}", dist);
             List<TeacherInfo> teacherInfoList = lecture.getTeachers().stream().map(teacher -> {
                 List<CareerInfo> careerInfoList = teacher.getCareers().stream().map(career ->
                         new CareerInfo(career.getId(), career.getContent())).collect(Collectors.toList());
@@ -210,6 +216,13 @@ public class LectureService {
             dDay = ChronoUnit.DAYS.between(lastDate, curDate);
             if (dDay < 0) {
                 lecture.setStatus(false); // D-day가 끝났으면 마감처리
+            }
+
+            Map<Integer, String> plan = new HashMap<>();
+            List<Educate> educateList = educateRepository.findByLectureId(lecture.getId());
+            for (int i = 1; i <= educateList.size(); i++) {
+                log.info("educateList: {}", educateList.get(i - 1).getContent());
+                plan.put(i, String.valueOf(educateList.get(i - 1).getContent()));
             }
 
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
@@ -233,6 +246,7 @@ public class LectureService {
                     .longitude(lecture.getLongitude())
                     .category("미정")
                     .dDay(dDay)
+                    .plan(plan)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .textBookName(lecture.getTextBookName())
@@ -284,6 +298,13 @@ public class LectureService {
                 lecture.setStatus(false); // D-day가 끝났으면 마감처리
             }
 
+            Map<Integer, String> plan = new HashMap<>();
+            List<Educate> educateList = educateRepository.findByLectureId(lecture.getId());
+            for (int i = 1; i <= educateList.size(); i++) {
+                log.info("educateList: {}", educateList.get(i - 1).getContent());
+                plan.put(i, String.valueOf(educateList.get(i - 1).getContent()));
+            }
+
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -302,6 +323,7 @@ public class LectureService {
                     .thumbnail(lecture.getThumbnail())
                     .address(lecture.getAddress())
                     .division(lecture.getDivision())
+                    .plan(plan)
                     .condition(lecture.getTarget())
                     .dDay(dDay)
                     .detail(lecture.getDescription())

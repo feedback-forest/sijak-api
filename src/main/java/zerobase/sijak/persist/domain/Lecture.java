@@ -112,4 +112,9 @@ public class Lecture {
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "lecture")
+    @Builder.Default
+    private List<Educate> educates = new ArrayList<>();
+
 }

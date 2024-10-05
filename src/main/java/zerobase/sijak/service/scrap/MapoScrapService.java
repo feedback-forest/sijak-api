@@ -54,6 +54,8 @@ public class MapoScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -194,6 +196,8 @@ public class MapoScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 

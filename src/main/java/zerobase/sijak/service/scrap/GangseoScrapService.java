@@ -13,14 +13,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.sijak.persist.domain.Career;
-import zerobase.sijak.persist.domain.Image;
-import zerobase.sijak.persist.domain.Lecture;
-import zerobase.sijak.persist.domain.Teacher;
-import zerobase.sijak.persist.repository.CareerRepository;
-import zerobase.sijak.persist.repository.ImageRepository;
-import zerobase.sijak.persist.repository.LectureRepository;
-import zerobase.sijak.persist.repository.TeacherRepository;
+import zerobase.sijak.persist.domain.*;
+import zerobase.sijak.persist.repository.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -40,8 +34,9 @@ public class GangseoScrapService {
     private final ImageRepository imageRepository;
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
+    private final EducateRepository educateRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
@@ -53,6 +48,8 @@ public class GangseoScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -183,6 +180,8 @@ public class GangseoScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -271,20 +270,37 @@ public class GangseoScrapService {
             Teacher teacherId = teacherRepository.save(teacher);
             int tid = teacherId.getId();
             WebElement innerUl = li.findElement(By.tagName("ul"));
-            List<WebElement> innerLis = innerUl.findElements(By.tagName("li"));
-            List<String> histories = new ArrayList<>();
-            for (WebElement innerLi : innerLis) {
-                String content = innerLi.getText().substring(1).trim();
-                Career career = Career.builder()
-                        .teacher(teacherId)
-                        .content(content).build();
-                careerRepository.save(career);
-                histories.add(content);
+            log.info("innerUI : {}", innerUl.getAttribute("innerHTML"));
+            if (innerUl.getAttribute("innerHTML").contains("li")) {
+                List<WebElement> innerLis = innerUl.findElements(By.tagName("li"));
+                List<String> histories = new ArrayList<>();
+                for (WebElement innerLi : innerLis) {
+                    String content = innerLi.getText().substring(1).trim();
+                    Career career = Career.builder()
+                            .teacher(teacherId)
+                            .content(content).build();
+                    careerRepository.save(career);
+                    histories.add(content);
+                }
+                teachers.put(teacherName, histories);
+                System.out.println("teachers = " + teachers);
             }
-            teachers.put(teacherName, histories);
-            System.out.println("teachers = " + teachers);
         }
 
+        // educatePlan
+        log.info("educate start");
+        List<WebElement> trs = driver.findElements(By.cssSelector("body > div.container > div.course-content.clearfix > div.course-left > div.course-schedule-table > div > table > tbody > tr"));
+        for (WebElement tr : trs) {
+            List<WebElement> eduTds = tr.findElements(By.tagName("td"));
+            for (int i = 0; i < eduTds.size(); i++) {
+                if (i == 3) {
+                    String content = eduTds.get(i).getText();
+                    log.info("content : {}" + content);
+                    Educate educate = new Educate(lecture, content);
+                    educateRepository.save(educate);
+                }
+            }
+        }
 
         System.out.println("상세 읽기 finish!");
         driver.close();
