@@ -1,6 +1,7 @@
 package zerobase.sijak.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -47,12 +48,50 @@ public class KakaoService {
     @Value("${user_info_uri}")
     private String USER_INFO_URI;
 
+    @Value("${logout_redirect_uri}")
+    private String LOGOUT_REDIRECT_URI;
+
+    @Value("${kakao_logout_uri}")
+    private String KAKAO_LOGOUT_URI;
+
+    @Value("${public_logout_uri}")
+    private String PUBLIC_LOGOUT_URI;
+
+    @Value("${admin_key}")
+    private String ADMIN_KEY;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
     private final MemberRepository memberRepository;
     private WebClient.Builder webClientBuilder;
     private static final Logger logger = LoggerFactory.getLogger(SijakApplication.class);
+
+    public void logout(String token) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        Long kakaoId = member.getKakaoUserId();
+
+        WebClient webClient = WebClient.create(PUBLIC_LOGOUT_URI);
+        log.info("webClient : {}", webClient.toString());
+        webClient.post()
+                .uri(PUBLIC_LOGOUT_URI)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Authorization", "KakaoAK " + ADMIN_KEY)
+                .bodyValue("target_id_type=user_id&target_id=" + String.valueOf(kakaoId))
+                .retrieve();
+    }
 
     public ResponseDTO createPrivateToken(String code) {
 
@@ -180,17 +219,44 @@ public class KakaoService {
 
     }
 
-    public void validateNickname(NicknameRequest nicknameRequest) {
+    public void validateNickname(String token, NicknameRequest nicknameRequest) {
+
         String nickname = nicknameRequest.getNickname();
 
-        if (nickname == null || nickname.isEmpty())
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
-        if (nickname.length() < 2 || nickname.length() > 12)
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
-        if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
-        if (memberRepository.existsByProfileNickname(nickname))
-            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+        // 회원이 아닌 경우
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            if (nickname == null || nickname.isEmpty())
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (nickname.length() < 2 || nickname.length() > 12)
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (memberRepository.existsByProfileNickname(nickname))
+                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+        }
+        // 회원인 경우
+        else {
+            String jwtToken = token.substring(7);
+            Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+            log.info("email : {}", claims.getSubject());
+
+            Member member = memberRepository.findByAccountEmail(claims.getSubject());
+            if (member == null) {
+                throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            }
+
+            String pn = member.getProfileNickname();
+            if (nickname.equals(pn)) return;
+            if (nickname == null || nickname.isEmpty())
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (nickname.length() < 2 || nickname.length() > 12)
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            if (memberRepository.existsByProfileNickname(nickname))
+                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+        }
+
     }
 
     public void validateNickname(NicknameRequest nicknameRequest, String curNickname) {

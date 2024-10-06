@@ -1,11 +1,14 @@
 package zerobase.sijak.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.annotation.RequestScope;
+import reactor.core.publisher.Mono;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.ResponseDTO;
 import zerobase.sijak.service.KakaoService;
@@ -26,11 +29,19 @@ public class KakaoUserController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), responseDTO));
     }
 
+    @GetMapping("/api/logout")
+    public ResponseEntity<HttpResponse> logout(@RequestHeader("Authorization") String token) {
+        log.info("logout");
+        kakaoService.logout(token);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+    }
+
     @PostMapping("/api/nickname/validate")
-    public ResponseEntity<HttpResponse> setNickname(@RequestParam(name = "nickname") String nickname) {
+    public ResponseEntity<HttpResponse> setNickname(@RequestHeader("Authorization") String token,
+                                                    @RequestParam(name = "nickname") String nickname) {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
-        kakaoService.validateNickname(nicknameRequest);
+        kakaoService.validateNickname(token, nicknameRequest);
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 

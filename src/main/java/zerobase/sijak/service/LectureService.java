@@ -49,6 +49,7 @@ public class LectureService {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readHome -> 회원이 아닙니다.");
+            double distance = calculateDistance(latitude, longitude, 37.506004, 127.109096);
             Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
