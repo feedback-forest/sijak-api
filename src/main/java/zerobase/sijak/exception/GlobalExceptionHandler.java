@@ -2,6 +2,7 @@ package zerobase.sijak.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleGeoLocationNotExistException(GeoLocationNotExistException e) {
+        log.error("GeoLocationNotExistException", e);
+        ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode());
+        return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(e.getErrorCode().getStatus()));
+    }
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleInterruptedException(InterruptedException e) {
