@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import zerobase.sijak.dto.*;
-import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.service.LectureService;
 
 import java.util.HashMap;
@@ -35,7 +34,7 @@ public class LectureController {
         double latitude = positionInfo.getLatitude();
         double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, latitude, longitude, dist);
+        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, longitude, latitude, dist);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
 
         Map<String, Object> totalList = new HashMap<>();
