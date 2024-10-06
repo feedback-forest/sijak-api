@@ -52,8 +52,8 @@ public class KakaoUserController {
     @PatchMapping("/api/mypage/address")
     public ResponseEntity<HttpResponse> updateAddress(@RequestHeader("Authorization") String token,
                                                       @RequestBody PositionInfo positionInfo) throws JsonProcessingException {
-        kakaoService.updateAddress(token, positionInfo);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        GeoResponse geoResponse = kakaoService.updateAddress(token, positionInfo);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), geoResponse));
     }
 
     @PatchMapping("/api/mypage")
@@ -66,5 +66,14 @@ public class KakaoUserController {
 
         kakaoService.updateMyPage(token, myPageParam);
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+    }
+
+
+    @GetMapping("/api/user/{id}")
+    public ResponseEntity<HttpResponse> getUser(@RequestHeader("Authorization") String token, @PathVariable("id") int id) {
+
+        MyPageResponse myPageResponse = kakaoService.getUserMypage(token, id);
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), myPageResponse));
     }
 }

@@ -18,10 +18,7 @@ import reactor.core.publisher.Mono;
 import zerobase.sijak.SijakApplication;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.*;
-import zerobase.sijak.exception.AlreadyNicknameExistException;
-import zerobase.sijak.exception.EmailNotExistException;
-import zerobase.sijak.exception.ErrorCode;
-import zerobase.sijak.exception.InvalidNicknameException;
+import zerobase.sijak.exception.*;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.jwt.KakaoUserService;
 import zerobase.sijak.jwt.KakaoUser;
@@ -91,10 +88,6 @@ public class KakaoService {
                 .bodyToMono(KakaoProfile.class)
                 .block();
 
-//        curl -X GET "https://kapi.kakao.com/v2/user/me" \
-//        -H "Authorization: Bearer pljulYDZpXd4cu1EBozxXe9t-Ohx2NZzAAAAAQo9dGgAAAGSUT2MxqbXH4eeWQ3B"
-
-
         log.info("카카오 Access 토큰 활용 -> 사용자 정보 조회 성공");
 
         log.info("사용자 정보 DB 저장 시작");
@@ -154,6 +147,7 @@ public class KakaoService {
         MyPageResponse myPageResponse = MyPageResponse.builder()
                 .nickname(member.getProfileNickname())
                 .location(member.getAddress())
+                .ageRange(member.getAgeRange())
                 .email(member.getAccountEmail())
                 .phoneNumber(member.getPhoneNumber())
                 .birth(member.getBirth())
@@ -182,12 +176,28 @@ public class KakaoService {
         member.setAddress(myPageParam.getAddress());
 
         memberRepository.save(member);
-    }
 
+
+    }
 
     public void validateNickname(NicknameRequest nicknameRequest) {
         String nickname = nicknameRequest.getNickname();
 
+        if (nickname == null || nickname.isEmpty())
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (nickname.length() < 2 || nickname.length() > 12)
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+        if (memberRepository.existsByProfileNickname(nickname))
+            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+    }
+
+    public void validateNickname(NicknameRequest nicknameRequest, String curNickname) {
+
+        String nickname = nicknameRequest.getNickname();
+
+        if (nickname.equals(curNickname)) return;
         if (nickname == null || nickname.isEmpty())
             throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
         if (nickname.length() < 2 || nickname.length() > 12)
@@ -215,13 +225,14 @@ public class KakaoService {
             throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
 
-        validateNickname(NicknameRequest.builder().nickname(nickname).build());
+        String pn = member.getProfileNickname();
+        validateNickname(NicknameRequest.builder().nickname(nickname).build(), pn);
 
         member.setProfileNickname(nickname);
         memberRepository.save(member);
     }
 
-    public void updateAddress(String token, PositionInfo positionInfo) throws JsonProcessingException {
+    public GeoResponse updateAddress(String token, PositionInfo positionInfo) throws JsonProcessingException {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
@@ -244,6 +255,34 @@ public class KakaoService {
         member.setAddress(address);
 
         memberRepository.save(member);
+
+        return new GeoResponse(address);
+    }
+
+    public MyPageResponse getUserMypage(String token, int id) {
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByIdAndAccountEmail(id, claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("해당 유저의 정보가 없습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        MyPageResponse myPageResponse = MyPageResponse.builder()
+                .nickname(member.getProfileNickname())
+                .location(member.getAddress())
+                .ageRange(member.getAgeRange())
+                .email(member.getAccountEmail())
+                .phoneNumber(member.getPhoneNumber())
+                .birth(member.getBirth())
+                .gender(member.getGender()).build();
+
+        return myPageResponse;
     }
 
     private String getNewAddress(double longitude, double latitude) throws JsonProcessingException {
@@ -272,8 +311,8 @@ public class KakaoService {
             log.info("getInfo.documents.get(0) = {}", geoInfo.documents.get(0));
             String[] longAddress = geoInfo.documents.get(0).address.address_name.split(" ");
             return longAddress[0] + " " + longAddress[1];
+        } else {
+            throw new GeoLocationNotExistException("해당 위도, 경도에 대한 행정구역을 알 수 없습니다.", ErrorCode.GEOLOCATION_NOT_EXIST);
         }
-
-        return "";
     }
 }

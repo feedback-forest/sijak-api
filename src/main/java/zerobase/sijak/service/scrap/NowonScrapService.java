@@ -14,14 +14,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.crawling.LectureCreateRequest;
-import zerobase.sijak.persist.domain.Career;
-import zerobase.sijak.persist.domain.Image;
-import zerobase.sijak.persist.domain.Lecture;
-import zerobase.sijak.persist.domain.Teacher;
-import zerobase.sijak.persist.repository.CareerRepository;
-import zerobase.sijak.persist.repository.ImageRepository;
-import zerobase.sijak.persist.repository.LectureRepository;
-import zerobase.sijak.persist.repository.TeacherRepository;
+import zerobase.sijak.persist.domain.*;
+import zerobase.sijak.persist.repository.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -41,6 +35,7 @@ public class NowonScrapService {
     private final ImageRepository imageRepository;
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
+    private final EducateRepository educateRepository;
 
     //@Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
@@ -54,6 +49,8 @@ public class NowonScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -181,6 +178,8 @@ public class NowonScrapService {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
         options.addArguments("--disable-popup-blocking");
+        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
@@ -281,6 +280,20 @@ public class NowonScrapService {
             }
             teachers.put(teacherName, histories);
             System.out.println("teachers = " + teachers);
+        }
+
+        // educatePlan
+        log.info("educate start");
+        List<WebElement> trs = driver.findElements(By.cssSelector("body > div.container > div.course-content.clearfix > div.course-left > div.course-schedule-table > div > table > tbody > tr"));
+        for (WebElement tr : trs) {
+            List<WebElement> eduTds = tr.findElements(By.tagName("td"));
+            for (int i = 0; i < eduTds.size(); i++) {
+                if (i == 3) {
+                    String content = eduTds.get(i).getText();
+                    Educate educate = new Educate(lecture, content);
+                    educateRepository.save(educate);
+                }
+            }
         }
 
 
