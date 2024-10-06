@@ -36,7 +36,7 @@ public class GangseoScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
