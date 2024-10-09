@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 public class LectureService {
 
     private final HeartService heartService;
-    private final KakaoService kakaoService;
     private final LectureRepository lectureRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
@@ -45,12 +44,12 @@ public class LectureService {
     private final double EARTH_RADIUS_KM = 6371.0;
     private final EducateRepository educateRepository;
 
-    public Slice<LectureHomeResponse> readHome(String token, Pageable pageable, double longitude, double latitude, double dist) {
+    public Slice<LectureHomeResponse> readHome(String token, Pageable pageable) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readHome -> 회원이 아닙니다.");
-            double distance = calculateDistance(latitude, longitude, 37.506004, 127.109096);
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
+
+            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -61,6 +60,7 @@ public class LectureService {
                                 .thumbnail(lecture.getThumbnail())
                                 .startDate(lecture.getStartDate())
                                 .endDate(lecture.getEndDate())
+                                .division(lecture.getDivision())
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
@@ -85,7 +85,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
+            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
@@ -98,6 +98,7 @@ public class LectureService {
                                 .time(lecture.getTime())
                                 .startDate(lecture.getStartDate())
                                 .endDate(lecture.getEndDate())
+                                .division(lecture.getDivision())
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
@@ -113,10 +114,10 @@ public class LectureService {
         }
     }
 
-    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable, double longitude, double latitude, double dist) {
+    public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readLectues -> 회원이 아닙니다.");
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
+            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -127,6 +128,7 @@ public class LectureService {
                                 .time(lecture.getTime())
                                 .thumbnail(lecture.getThumbnail())
                                 .target(lecture.getTarget())
+                                .division(lecture.getDivision())
                                 .startDate(lecture.getStartDate())
                                 .endDate(lecture.getEndDate())
                                 .latitude(lecture.getLatitude())
@@ -151,7 +153,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findLecturesByDistance(latitude, longitude, dist / 1000, pageable);
+            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
@@ -161,6 +163,7 @@ public class LectureService {
                                 .id(lecture.getId())
                                 .name(lecture.getName())
                                 .time(lecture.getTime())
+                                .division(lecture.getDivision())
                                 .thumbnail(lecture.getThumbnail())
                                 .target(lecture.getTarget())
                                 .address(shortAddress)
@@ -179,7 +182,7 @@ public class LectureService {
         }
     }
 
-    public LectureDetailResponse readLecture(String token, Integer id, double latitude, double longitude) {
+    public LectureDetailResponse readLecture(String token, Integer id) {
 
 
         Lecture lecture = lectureRepository
@@ -191,15 +194,15 @@ public class LectureService {
         // 회원이 아닌 경우 -> 찜 정보가 노출이 되지 않는다.
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("회원이 아닙니다.");
-            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
-            dist = Math.round(dist * 10.0) / 10.0;
-            String distance = String.valueOf(dist) + "m";
-            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
+//            dist = Math.round(dist * 10.0) / 10.0;
+//            String distance = String.valueOf(dist) + "m";
+//            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
+//            log.info("dist: {}", dist);
+
             PeriodInfo periodInfo = new PeriodInfo(lecture.getStartDate(), lecture.getEndDate(), lecture.getTotal());
             List<PeriodInfo> periodInfoList = new ArrayList<>();
             periodInfoList.add(periodInfo);
 
-            log.info("dist: {}", dist);
             List<TeacherInfo> teacherInfoList = lecture.getTeachers().stream().map(teacher -> {
                 List<CareerInfo> careerInfoList = teacher.getCareers().stream().map(career ->
                         new CareerInfo(career.getId(), career.getContent())).collect(Collectors.toList());
@@ -256,8 +259,6 @@ public class LectureService {
                     .need(lecture.getNeed())
                     .images(lecture.getImageUrls())
                     .heart(false)
-                    .distance(distance)
-                    .estimatedTime(estimatedTime)
                     .build();
             return lectureDetailResponse;
         }
@@ -272,10 +273,11 @@ public class LectureService {
                 throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
             }
 
-            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
-            dist = Math.round(dist * 10.0) / 10.0;
-            String distance = String.valueOf(dist) + "m";
-            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
+//            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
+//            dist = Math.round(dist * 10.0) / 10.0;
+//            String distance = String.valueOf(dist) + "m";
+//            String estimatedTime = "도보 약 " + String.valueOf((int) (dist * 0.02)) + "분 이내";
+
             PeriodInfo periodInfo = new PeriodInfo(lecture.getStartDate(), lecture.getEndDate(), lecture.getTotal());
             List<PeriodInfo> periodInfoList = new ArrayList<>();
             periodInfoList.add(periodInfo);
@@ -336,8 +338,6 @@ public class LectureService {
                     .images(lecture.getImageUrls())
                     .need(lecture.getNeed())
                     .heart(heartService.isHearted(id, member.getId()))
-                    .distance(distance)
-                    .estimatedTime(estimatedTime)
                     .build();
 
             return lectureDetailResponse;
@@ -352,23 +352,29 @@ public class LectureService {
             List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
 
             return topLectures.stream()
-                    .map(lecture -> PickHomeResponse.builder()
-                            .id(lecture.getId())
-                            .view(lecture.getView())
-                            .name(lecture.getName())
-                            .time(lecture.getTime())
-                            .thumbnail(lecture.getThumbnail())
-                            .startDate(lecture.getStartDate())
-                            .endDate(lecture.getEndDate())
-                            .dayOfWeek(lecture.getDayOfWeek())
-                            .status(lecture.isStatus())
-                            .target(lecture.getTarget())
-                            .link(lecture.getLink())
-                            .heart(false)
-                            .build()).collect(Collectors.toList());
+                    .map(lecture -> {
+                        String[] addressList = lecture.getAddress().split(" ");
+                        String shortAddress = addressList[0] + " " + addressList[1];
+                        return PickHomeResponse.builder()
+                                .id(lecture.getId())
+                                .view(lecture.getView())
+                                .name(lecture.getName())
+                                .address(shortAddress)
+                                .time(lecture.getTime())
+                                .division(lecture.getDivision())
+                                .thumbnail(lecture.getThumbnail())
+                                .startDate(lecture.getStartDate())
+                                .endDate(lecture.getEndDate())
+                                .dayOfWeek(lecture.getDayOfWeek())
+                                .status(lecture.isStatus())
+                                .target(lecture.getTarget())
+                                .link(lecture.getLink())
+                                .heart(false)
+                                .build();
+                    }).collect(Collectors.toList());
 
         }
-        // 회원이 아닌 경우
+        // 회원인 경우
         else {
             String jwtToken = token.substring(7);
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
@@ -382,21 +388,98 @@ public class LectureService {
             List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
 
             return topLectures.stream()
-                    .map(lecture -> PickHomeResponse.builder()
-                            .id(lecture.getId())
-                            .view(lecture.getView())
-                            .name(lecture.getName())
-                            .time(lecture.getTime())
-                            .thumbnail(lecture.getThumbnail())
-                            .startDate(lecture.getStartDate())
-                            .endDate(lecture.getEndDate())
-                            .dayOfWeek(lecture.getDayOfWeek())
-                            .status(lecture.isStatus())
-                            .target(lecture.getTarget())
-                            .link(lecture.getLink())
-                            .heart(heartService.isHearted(lecture.getId(), member.getId()))
-                            .build()).collect(Collectors.toList());
+                    .map(lecture -> {
+                        String[] addressList = lecture.getAddress().split(" ");
+                        String shortAddress = addressList[0] + " " + addressList[1];
+                        return PickHomeResponse.builder()
+                                .id(lecture.getId())
+                                .view(lecture.getView())
+                                .name(lecture.getName())
+                                .address(shortAddress)
+                                .time(lecture.getTime())
+                                .division(lecture.getDivision())
+                                .thumbnail(lecture.getThumbnail())
+                                .startDate(lecture.getStartDate())
+                                .endDate(lecture.getEndDate())
+                                .dayOfWeek(lecture.getDayOfWeek())
+                                .status(lecture.isStatus())
+                                .target(lecture.getTarget())
+                                .link(lecture.getLink())
+                                .heart(false)
+                                .build();
+                    }).collect(Collectors.toList());
         }
+    }
+
+    public Slice<LectureHomeResponse> readLectureByLocation(String token, String loc, Pageable pageable) {
+        // 회원이 아닌 경우
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            Slice<Lecture> lectures = lectureRepository.findLecturesByLocation(loc, pageable);
+            List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
+                    .map(lecture -> {
+                        String[] addressList = lecture.getAddress().split(" ");
+                        String shortAddress = addressList[0] + " " + addressList[1];
+                        return LectureHomeResponse.builder()
+                                .id(lecture.getId())
+                                .name(lecture.getName())
+                                .time(lecture.getTime())
+                                .thumbnail(lecture.getThumbnail())
+                                .target(lecture.getTarget())
+                                .division(lecture.getDivision())
+                                .startDate(lecture.getStartDate())
+                                .endDate(lecture.getEndDate())
+                                .latitude(lecture.getLatitude())
+                                .longitude(lecture.getLongitude())
+                                .hostedBy(lecture.getCenterName())
+                                .dayOfWeek(lecture.getDayOfWeek())
+                                .address(shortAddress)
+                                .status(lecture.isStatus())
+                                .link(lecture.getLink())
+                                .heart(false).build();
+                    }).toList();
+            return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
+        }
+        // 회원이 아닌 경우
+        else {
+            log.info("readLectures -> 회원입니다.");
+            String jwtToken = token.substring(7);
+            Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+            log.info("readLectures: token not null");
+
+            Member member = memberRepository.findByAccountEmail(claims.getSubject());
+            if (member == null) {
+                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            }
+
+            log.info("readLectures: member email {}", member.getAccountEmail());
+            Slice<Lecture> lectures = lectureRepository.findLecturesByLocation(loc, pageable);
+            List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
+                    .map(lecture -> {
+                        boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
+                        String[] addressList = lecture.getAddress().split(" ");
+                        String shortAddress = addressList[0] + " " + addressList[1];
+                        return LectureHomeResponse.builder()
+                                .id(lecture.getId())
+                                .name(lecture.getName())
+                                .time(lecture.getTime())
+                                .division(lecture.getDivision())
+                                .thumbnail(lecture.getThumbnail())
+                                .target(lecture.getTarget())
+                                .address(shortAddress)
+                                .latitude(lecture.getLatitude())
+                                .longitude(lecture.getLongitude())
+                                .hostedBy(lecture.getCenterName())
+                                .status(lecture.isStatus())
+                                .startDate(lecture.getStartDate())
+                                .endDate(lecture.getEndDate())
+                                .dayOfWeek(lecture.getDayOfWeek())
+                                .link(lecture.getLink())
+                                .heart(isHeart).build();
+                    }).toList();
+
+            return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
+        }
+
     }
 
 

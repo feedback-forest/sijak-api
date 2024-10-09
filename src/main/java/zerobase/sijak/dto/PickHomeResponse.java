@@ -42,4 +42,6 @@ public class PickHomeResponse {
 
     private String link;
 
+    private String division;
+
 }
