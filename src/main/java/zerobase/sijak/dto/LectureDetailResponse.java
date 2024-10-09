@@ -72,9 +72,9 @@ public class LectureDetailResponse {
     @JsonProperty("instructor_name")
     private List<TeacherInfo> instructorName;
 
-    private String distance;
-
-    private String estimatedTime;
+//    private String distance;
+//
+//    private String estimatedTime;
 
     private double latitude;
 
