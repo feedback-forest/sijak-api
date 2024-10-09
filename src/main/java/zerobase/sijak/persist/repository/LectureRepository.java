@@ -19,8 +19,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     List<Lecture> findTop6ByOrderByViewDesc();
 
-    Slice<Lecture> findAllBy(Pageable pageable);
-
     @Query(value = "SELECT * FROM lecture l WHERE " +
             "(6371 * acos(cos(radians(:latitude)) * cos(radians(l.latitude)) * " +
             "cos(radians(l.longitude) - radians(:longitude)) + sin(radians(:latitude)) * " +
@@ -34,5 +32,10 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
                                           @Param("longitude") double longitude,
                                           @Param("distance") double distance,
                                           Pageable pageable);
+
+    @Query("SELECT l " +
+            "FROM Lecture l " +
+            "WHERE l.address LIKE %:location%")
+    Slice<Lecture> findLecturesByLocation(@Param("location") String location, Pageable pageable);
 
 }
