@@ -80,7 +80,7 @@ public class GangseoScrapService {
                 List<WebElement> cols = row.findElements(By.tagName("td"));
                 if (alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
                         , cols.get(cols.size() - 1).getText())) continue;
-                if (!cols.get(cols.size() - 1).getText().equals("수강신청")) continue;
+                if (!cols.get(cols.size() - 1).getText().trim().equals("수강신청")) continue;
 
                 System.out.println("2222");
                 for (int j = 3; j < cols.size(); j++) {

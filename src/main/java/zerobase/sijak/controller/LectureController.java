@@ -27,14 +27,11 @@ public class LectureController {
     @PostMapping("/home")
     public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
                                                  @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "4") int size,
-                                                 @RequestParam(name = "dist") double dist,
-                                                 @RequestBody PositionInfo positionInfo) {
+                                                 @RequestParam(defaultValue = "4") int size) {
 
-        double latitude = positionInfo.getLatitude();
-        double longitude = positionInfo.getLongitude();
+
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable, longitude, latitude, dist);
+        Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
 
         Map<String, Object> totalList = new HashMap<>();
@@ -48,14 +45,10 @@ public class LectureController {
     @PostMapping("/lectures")
     public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
                                                      @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "9") int size,
-                                                     @RequestParam(name = "dist") double dist,
-                                                     @RequestBody PositionInfo positionInfo) {
+                                                     @RequestParam(defaultValue = "9") int size) {
 
-        double latitude = positionInfo.getLatitude();
-        double longitude = positionInfo.getLongitude();
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable, longitude, latitude, dist);
+        Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", lectures.getContent());
@@ -64,14 +57,26 @@ public class LectureController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
 
+    @PostMapping("/location")
+    public ResponseEntity<HttpResponse> readLocation(@RequestHeader("Authorization") String token,
+                                                     @RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "4") int size,
+                                                     @RequestParam(value = "location") String location) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<LectureHomeResponse> lectures = lectureService.readLectureByLocation(token, location, pageable);
+
+        Map<String, Object> lectureByLocationList = new HashMap<>();
+        lectureByLocationList.put("data", lectures.getContent());
+        lectureByLocationList.put("hasNext", lectures.hasNext());
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), lectureByLocationList));
+    }
 
     @PostMapping("/lectures/{id}")
-    public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id,
-                                                    @RequestBody PositionInfo positionInfo) {
+    public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id) {
 
-        double latitude = positionInfo.getLatitude();
-        double longitude = positionInfo.getLongitude();
-        LectureDetailResponse lectureDetailResponse = lectureService.readLecture(token, id, latitude, longitude);
+        LectureDetailResponse lectureDetailResponse = lectureService.readLecture(token, id);
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), lectureDetailResponse));
     }

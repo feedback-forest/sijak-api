@@ -44,6 +44,8 @@ public class LectureHomeResponse {
 
     private String link;
 
+    private String division;
+
     private boolean heart;
 
 }

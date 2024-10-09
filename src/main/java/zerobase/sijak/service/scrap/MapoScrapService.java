@@ -85,7 +85,7 @@ public class MapoScrapService {
                 List<WebElement> cols = row.findElements(By.tagName("td"));
                 if (alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
                         , cols.get(cols.size() - 1).getText())) continue;
-                if (cols.get(cols.size() - 1).getText().equals("신청마감")) continue;
+                if (cols.get(cols.size() - 1).getText().trim().equals("신청마감")) continue;
 
                 System.out.println("222");
                 for (int j = 2; j < cols.size(); j++) {
