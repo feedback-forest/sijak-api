@@ -62,6 +62,7 @@ public class HeartService {
                             .time(lecture.getTime())
                             .startDate(lecture.getStartDate())
                             .endDate(lecture.getEndDate())
+                            .division(lecture.getDivision())
                             .dayOfWeek(lecture.getDayOfWeek())
                             .target(lecture.getTarget())
                             .status(lecture.isStatus())
