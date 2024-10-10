@@ -83,9 +83,10 @@ public class SongpaScrapService {
                 List<WebElement> cols = row.findElements(By.tagName("td"));
                 if (!isTrueKeyword(cols.get(1).getText().substring(5))) continue;
                 if (alreadySavedUserJudge(cols.get(1).findElement(By.tagName("a")).getAttribute("href")
-                        ,cols.get(cols.size() - 1).getText())) continue;
+                        , cols.get(cols.size() - 1).getText())) continue;
                 log.info("status = {}", cols.get(cols.size() - 1).getText());
-                if (cols.get(cols.size() - 1).getText().trim().equals("마감") || cols.get(cols.size() - 1).getText().trim().equals("접수마감")) continue;
+                if (cols.get(cols.size() - 1).getText().trim().equals("마감") || cols.get(cols.size() - 1).getText().trim().equals("접수마감"))
+                    continue;
 
                 System.out.println("2222");
                 for (int j = 0; j < cols.size(); j++) {
@@ -288,7 +289,7 @@ public class SongpaScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && (lectureStatus.equals("마감") || lectureStatus.equals("접수마감") )) {
+        else if (lecture.isStatus() && (lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;

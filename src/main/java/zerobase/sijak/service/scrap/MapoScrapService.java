@@ -264,7 +264,7 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && lectureStatus.equals("신청마감")) {
+        else if (lecture.isStatus() && lectureStatus.trim().equals("신청마감")) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
