@@ -66,7 +66,8 @@ public class HeartService {
                             .dayOfWeek(lecture.getDayOfWeek())
                             .target(lecture.getTarget())
                             .status(lecture.isStatus())
-                            .address(shortAddress)
+                            .longAddress(lecture.getAddress())
+                            .shortAddress(shortAddress)
                             .link(lecture.getLink())
                             .heart(isHeart).build();
                 }).toList();
