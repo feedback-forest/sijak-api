@@ -17,6 +17,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     Slice<Lecture> findAllByOrderByStatusDescViewDesc(Pageable pageable);
 
+    Slice<Lecture> findAllByOrderByStatusDesc(Pageable pageable);
+
     List<Lecture> findTop6ByStatusTrueOrderByViewDesc();
 
     @Query(value = "SELECT * FROM lecture l WHERE " +

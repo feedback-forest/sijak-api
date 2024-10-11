@@ -119,7 +119,7 @@ public class LectureService {
     public Slice<LectureHomeResponse> readLectures(String token, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readLectues -> 회원이 아닙니다.");
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDesc(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -156,7 +156,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDesc(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
