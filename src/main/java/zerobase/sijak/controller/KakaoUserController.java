@@ -29,7 +29,7 @@ public class KakaoUserController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), responseDTO));
     }
 
-    @GetMapping("/api/logout")
+    @PostMapping("/api/logout")
     public ResponseEntity<HttpResponse> logout(@RequestHeader("Authorization") String token) {
         log.info("logout");
         kakaoService.logout(token);
