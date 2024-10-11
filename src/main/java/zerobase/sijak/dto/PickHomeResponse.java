@@ -38,7 +38,11 @@ public class PickHomeResponse {
     @JsonProperty("day_of_week")
     private String dayOfWeek;
 
-    private String address;
+    @JsonProperty("short_address")
+    private String shortAddress;
+
+    @JsonProperty("long_address")
+    private String longAddress;
 
     private String link;
 
