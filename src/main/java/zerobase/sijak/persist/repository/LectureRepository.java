@@ -13,11 +13,11 @@ import java.util.List;
 @Repository
 public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
-    Lecture findByName(String name);
-
     Lecture findByLink(String link);
 
-    List<Lecture> findTop6ByOrderByViewDesc();
+    Slice<Lecture> findAllByOrderByStatusDescViewDesc(Pageable pageable);
+
+    List<Lecture> findTop6ByStatusTrueOrderByViewDesc();
 
     @Query(value = "SELECT * FROM lecture l WHERE " +
             "(6371 * acos(cos(radians(:latitude)) * cos(radians(l.latitude)) * " +
@@ -35,7 +35,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     @Query("SELECT l " +
             "FROM Lecture l " +
-            "WHERE l.address LIKE %:location%")
+            "WHERE l.address LIKE %:location% " +
+            "ORDER BY l.status DESC")
     Slice<Lecture> findLecturesByLocation(@Param("location") String location, Pageable pageable);
 
 }

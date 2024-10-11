@@ -49,7 +49,7 @@ public class LectureService {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             log.info("readHome -> 회원이 아닙니다.");
 
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDescViewDesc(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
@@ -85,7 +85,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
-            Slice<Lecture> lectures = lectureRepository.findAll(pageable);
+            Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDescViewDesc(pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
@@ -183,7 +183,6 @@ public class LectureService {
     }
 
     public LectureDetailResponse readLecture(String token, Integer id) {
-
 
         Lecture lecture = lectureRepository
                 .findById(id)
@@ -345,11 +344,10 @@ public class LectureService {
     }
 
     public List<PickHomeResponse> getPickClasses(String token) {
-
         // 회원이 아닌 경우
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
 
-            List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+            List<Lecture> topLectures = lectureRepository.findTop6ByStatusTrueOrderByViewDesc();
 
             return topLectures.stream()
                     .map(lecture -> {
@@ -385,10 +383,11 @@ public class LectureService {
                 throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
             }
 
-            List<Lecture> topLectures = lectureRepository.findTop6ByOrderByViewDesc();
+            List<Lecture> topLectures = lectureRepository.findTop6ByStatusTrueOrderByViewDesc();
 
             return topLectures.stream()
                     .map(lecture -> {
+                        boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
                         return PickHomeResponse.builder()
@@ -405,7 +404,7 @@ public class LectureService {
                                 .status(lecture.isStatus())
                                 .target(lecture.getTarget())
                                 .link(lecture.getLink())
-                                .heart(false)
+                                .heart(isHeart)
                                 .build();
                     }).collect(Collectors.toList());
         }
