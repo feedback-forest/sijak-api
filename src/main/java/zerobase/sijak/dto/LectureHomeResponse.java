@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,7 +42,11 @@ public class LectureHomeResponse {
     @JsonProperty("hosted_by")
     private String hostedBy;
 
-    private String address;
+    @JsonProperty("short_address")
+    private String shortAddress;
+
+    @JsonProperty("long_address")
+    private String longAddress;
 
     private String link;
 
