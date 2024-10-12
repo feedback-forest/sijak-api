@@ -24,10 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -419,6 +416,7 @@ public class LectureService {
     public Slice<LectureHomeResponse> readLectureByLocation(String token, String loc, Pageable pageable) {
         // 회원이 아닌 경우
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            loc = loc.replace("\"", " ").replace("\'", " ").trim();
             Slice<Lecture> lectures = lectureRepository.findLecturesByLocation(loc, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
@@ -458,6 +456,7 @@ public class LectureService {
             }
 
             log.info("readLectures: member email {}", member.getAccountEmail());
+            loc = loc.replace("\"", " ").replace("\'", " ").trim();
             Slice<Lecture> lectures = lectureRepository.findLecturesByLocation(loc, pageable);
             List<LectureHomeResponse> lectureHomeResponseList = lectures.getContent().stream()
                     .map(lecture -> {
@@ -487,6 +486,29 @@ public class LectureService {
             return new SliceImpl<>(lectureHomeResponseList, pageable, lectures.hasNext());
         }
 
+    }
+
+    public List<MarkerResponse> getMarkerClass() {
+        List<Object[]> lectures = lectureRepository.findGroupedLecturesByLocation();
+        List<MarkerResponse> markerResponseList = lectures.stream()
+                .map(lecture -> {
+                    String address = (String) lecture[0]; // address
+                    Double latitude = (Double) lecture[1]; // latitude
+                    Double longitude = (Double) lecture[2]; // longitude
+                    String centerName = (String) lecture[3]; // centerName
+
+                    String[] addressList = address.split(" ");
+                    String shortAddress = addressList[0] + " " + addressList[1];
+
+                    return MarkerResponse.builder()
+                            .longAddress(address)
+                            .shortAddress(shortAddress)
+                            .hostedBy(centerName)
+                            .longitude(longitude)
+                            .latitude(latitude).build();
+                }).toList();
+
+        return markerResponseList;
     }
 
 
