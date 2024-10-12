@@ -33,11 +33,13 @@ public class LectureController {
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readHome(token, pageable);
         List<PickHomeResponse> pickClasses = lectureService.getPickClasses(token);
+        List<MarkerResponse> markerClasses = lectureService.getMarkerClass();
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", lectures.getContent());
         totalList.put("hasNext", lectures.hasNext());
         totalList.put("pickClasses", pickClasses);
+        totalList.put("markerClasses", markerClasses);
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }
