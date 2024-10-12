@@ -37,8 +37,14 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer> {
 
     @Query("SELECT l " +
             "FROM Lecture l " +
-            "WHERE l.address LIKE %:location% " +
+            "WHERE (:location IS NULL OR :location = '' OR l.address LIKE %:location%) " +
             "ORDER BY l.status DESC")
     Slice<Lecture> findLecturesByLocation(@Param("location") String location, Pageable pageable);
+
+
+    @Query("SELECT l.address, l.latitude, l.longitude, l.centerName " +
+            "FROM Lecture l " +
+            "GROUP BY l.address, l.latitude, l.longitude, l.centerName ")
+    List<Object[]> findGroupedLecturesByLocation();
 
 }
