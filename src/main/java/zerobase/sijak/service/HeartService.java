@@ -48,7 +48,7 @@ public class HeartService {
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
 
-        Slice<Lecture> lectures = heartRepository.findLecturesByMemberId(member.getId(), pageable);
+        Slice<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
 
         List<LectureHomeResponse> lecturesResponse = lectures.getContent().stream()
                 .map(lecture -> {
@@ -63,6 +63,7 @@ public class HeartService {
                             .startDate(lecture.getStartDate())
                             .endDate(lecture.getEndDate())
                             .division(lecture.getDivision())
+                            .hostedBy(lecture.getCenterName())
                             .dayOfWeek(lecture.getDayOfWeek())
                             .target(lecture.getTarget())
                             .status(lecture.isStatus())

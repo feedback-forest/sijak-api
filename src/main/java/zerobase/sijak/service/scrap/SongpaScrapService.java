@@ -289,7 +289,11 @@ public class SongpaScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && (lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
+        else if (lecture.isStatus() && !(lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
+            lecture.setStatus(true);
+            lectureRepository.save(lecture);
+            return false;
+        } else if (lecture.isStatus() && (lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;

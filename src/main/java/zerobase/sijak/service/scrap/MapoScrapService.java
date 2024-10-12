@@ -25,6 +25,7 @@ import zerobase.sijak.persist.repository.CareerRepository;
 import zerobase.sijak.persist.repository.ImageRepository;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.TeacherRepository;
+import zerobase.sijak.service.LectureService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -41,6 +42,7 @@ public class MapoScrapService {
     private final ImageRepository imageRepository;
     private final TeacherRepository teacherRepository;
     private final CareerRepository careerRepository;
+    private final LectureService lectureService;
 
     //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
@@ -264,7 +266,11 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && lectureStatus.trim().equals("신청마감")) {
+        else if (!lecture.isStatus() && !lectureStatus.trim().equals("신청마감")) {
+            lecture.setStatus(true);
+            lectureRepository.save(lecture);
+            return false;
+        } else if (lecture.isStatus() && lectureStatus.trim().equals("신청마감")) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;

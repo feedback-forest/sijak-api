@@ -23,4 +23,9 @@ public interface HeartRepository extends JpaRepository<Heart, Integer> {
     @Query("SELECT h.lecture FROM Heart h WHERE h.member.id = :memberId")
     Slice<Lecture> findLecturesByMemberId(@Param("memberId") Integer memberId, Pageable pageable);
 
+    @Query("SELECT l FROM Lecture l " +
+            "JOIN Heart h ON h.lecture.id = l.id " +
+            "WHERE h.member.id = :memberId " +
+            "ORDER BY l.status DESC")
+    Slice<Lecture> findLecturesByMemberIdOrderByStatus(@Param("memberId") Integer memberId, Pageable pageable);
 }
