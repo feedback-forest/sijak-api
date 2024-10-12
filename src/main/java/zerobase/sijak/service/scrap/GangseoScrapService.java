@@ -78,9 +78,18 @@ public class GangseoScrapService {
                 WebElement row = rows.get(i);
 
                 List<WebElement> cols = row.findElements(By.tagName("td"));
+
+                log.info("수강신청 여부: {}", cols.get(cols.size() - 1).getText());
+                log.info("수강신청 여부 false/true: {}", !cols.get(cols.size() - 1).getText().trim().equals("수강신청"));
+                log.info("이미 저장 여부: {}", alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
+                        , cols.get(cols.size() - 1).getText()));
+                log.info("href = {}", cols.get(9).findElement(By.tagName("a")).getAttribute("href"));
+
                 if (alreadySavedUserJudge(cols.get(9).findElement(By.tagName("a")).getAttribute("href")
                         , cols.get(cols.size() - 1).getText())) continue;
+                log.info("저장 여부는 통과");
                 if (!cols.get(cols.size() - 1).getText().trim().equals("수강신청")) continue;
+                log.info("수강신청 여부 통과");
 
                 System.out.println("2222");
                 for (int j = 3; j < cols.size(); j++) {
@@ -312,7 +321,11 @@ public class GangseoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && !lectureStatus.trim().equals("수강신청")) {
+        else if (!lecture.isStatus() && lectureStatus.trim().equals("수강신청")) {
+            lecture.setStatus(true);
+            lectureRepository.save(lecture);
+            return false;
+        } else if (lecture.isStatus() && !lectureStatus.trim().equals("수강신청")) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
