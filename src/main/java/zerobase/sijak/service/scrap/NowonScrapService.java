@@ -307,11 +307,16 @@ public class NowonScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && !lectureStatus.trim().equals("수강신청")) {
+        else if (!lecture.isStatus() && lectureStatus.trim().equals("수강신청")) {
+            lecture.setStatus(true);
+            lectureRepository.save(lecture);
+            return false;
+        } else if (lecture.isStatus() && !lectureStatus.trim().equals("수강신청")) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
         }
+
         return true;
     }
 }
