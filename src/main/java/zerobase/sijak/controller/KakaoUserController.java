@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,8 @@ import reactor.core.publisher.Mono;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.ResponseDTO;
 import zerobase.sijak.service.KakaoService;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -33,6 +36,14 @@ public class KakaoUserController {
     public ResponseEntity<HttpResponse> logout(@RequestHeader("Authorization") String token) {
         log.info("logout");
         kakaoService.logout(token);
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+    }
+
+    @PostMapping("/api/agree")
+    public ResponseEntity<HttpResponse> agree(@RequestHeader("Authorization") String token, @RequestBody AgreeInfo agreeInfo) {
+        log.info("agree");
+        kakaoService.saveAgree(token, agreeInfo);
+
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 

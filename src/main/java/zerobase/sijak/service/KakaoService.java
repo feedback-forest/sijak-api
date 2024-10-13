@@ -24,8 +24,17 @@ import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.jwt.KakaoUserService;
 import zerobase.sijak.jwt.KakaoUser;
 import zerobase.sijak.persist.domain.Member;
+import zerobase.sijak.persist.domain.Term;
+import zerobase.sijak.persist.domain.TermType;
 import zerobase.sijak.persist.repository.KakaoRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
+import zerobase.sijak.persist.repository.TermRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -64,6 +73,7 @@ public class KakaoService {
     private final KakaoUserService kakaoUserService;
     private final KakaoRepository kakaoRepository;
     private final MemberRepository memberRepository;
+    private final TermRepository termRepository;
     private WebClient.Builder webClientBuilder;
     private static final Logger logger = LoggerFactory.getLogger(SijakApplication.class);
 
@@ -380,5 +390,49 @@ public class KakaoService {
         } else {
             throw new GeoLocationNotExistException("해당 위도, 경도에 대한 행정구역을 알 수 없습니다.", ErrorCode.GEOLOCATION_NOT_EXIST);
         }
+    }
+
+    public void saveAgree(String token, AgreeInfo agreeInfo) {
+
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) {
+            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+
+        List<String> agreeItems = agreeInfo.getAgreeItems();
+
+        List<Term> terms = termRepository.findByMemberId(member.getId());
+
+        for (Term term : terms) {
+            term.setActive(agreeItems.contains(term.getName()));
+            term.setUpdated_at(LocalDateTime.now());
+            termRepository.save(term);
+        }
+
+        // 새로운 약관을 추가 (사용자가 동의한 약관 중 기존에 없는 경우)
+        for (String agreeItem : agreeItems) {
+            if (terms.stream().noneMatch(t -> t.getName().equals(agreeItem))) {
+                Term term = Term.builder()
+                        .member(member)
+                        .created_at(LocalDateTime.now())
+                        .updated_at(LocalDateTime.now())
+                        .type(Objects.equals(agreeItem, "marketingAgree") ? TermType.optional : TermType.mandatory)
+                        .name(agreeItem)
+                        .active(true) // 새로 추가하는 항목은 active를 true로 설정
+                        .build();
+
+                termRepository.save(term); // 새로운 약관 저장
+            }
+        }
+
+
     }
 }
