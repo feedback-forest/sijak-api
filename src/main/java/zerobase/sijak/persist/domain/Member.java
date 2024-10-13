@@ -73,6 +73,11 @@ public class Member {
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "member")
+    @Builder.Default
+    private List<Term> terms = new ArrayList<>();
+
     public Member(KakaoUserInfo kakaoUserInfo) {
         this.kakaoUserId = kakaoUserInfo.getKakaoUserId();
         this.accountEmail = kakaoUserInfo.getEmail();
