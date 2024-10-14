@@ -54,4 +54,12 @@ public class HeartController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
+    @DeleteMapping("/hearts/deactivates")
+    public ResponseEntity<HttpResponse> deactivateHearts(@RequestHeader("Authorization") String token) {
+
+        heartService.deleteDeactivatedHearts(token);
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+    }
+
 }

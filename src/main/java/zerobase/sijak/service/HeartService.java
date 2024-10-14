@@ -122,4 +122,19 @@ public class HeartService {
         heartRepository.delete(heart);
     }
 
+    public void deleteDeactivatedHearts(String token) {
+
+        if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
+            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        }
+        String jwtToken = token.substring(7);
+        Claims claims = jwtTokenProvider.parseClaims(jwtToken);
+        log.info("email : {}", claims.getSubject());
+
+        Member member = memberRepository.findByAccountEmail(claims.getSubject());
+        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+
+        heartRepository.deleteClosedLecturesFromHearts(member.getId());
+    }
+
 }
