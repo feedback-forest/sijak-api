@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UserDetails createUserDetails(KakaoUser kakaouser) {
         return User.builder()
                 .username(kakaouser.getEmail())
-                .password(passwordEncoder.encode(kakaouser.getName()))
+                .password(passwordEncoder.encode(kakaouser.getNickname()))
                 .roles("USER")
                 .build();
     }

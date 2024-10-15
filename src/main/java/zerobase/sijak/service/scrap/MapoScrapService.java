@@ -266,10 +266,14 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (!lecture.isStatus() && !lectureStatus.trim().equals("신청마감")) {
+        else if (lecture.isStatus() && LocalDateTime.now().isAfter(lecture.getDeadline())) {
+            lecture.setStatus(false);
+            lectureRepository.save(lecture);
+            return true;
+        } else if (!lecture.isStatus() && !lectureStatus.trim().equals("신청마감")) {
             lecture.setStatus(true);
             lectureRepository.save(lecture);
-            return false;
+            return true;
         } else if (lecture.isStatus() && lectureStatus.trim().equals("신청마감")) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
