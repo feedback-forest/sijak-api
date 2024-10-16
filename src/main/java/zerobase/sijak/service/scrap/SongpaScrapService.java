@@ -38,7 +38,7 @@ public class SongpaScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapSongpa() throws InterruptedException {
 
         String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
