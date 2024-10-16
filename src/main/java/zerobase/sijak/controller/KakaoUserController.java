@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import zerobase.sijak.dto.*;
 import zerobase.sijak.dto.kakao.ResponseDTO;
 import zerobase.sijak.service.KakaoService;
+import zerobase.sijak.service.NicknameService;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class KakaoUserController {
 
     private final KakaoService kakaoService;
+    private final NicknameService nicknameService;
 
     @GetMapping("/login/callback")
     public ResponseEntity<HttpResponse> getToken(@RequestParam("code") String code) {
@@ -58,11 +60,19 @@ public class KakaoUserController {
 
     @PostMapping("/api/nickname")
     public ResponseEntity<HttpResponse> updateNickname(@RequestHeader("Authorization") String token,
-                                                       @RequestParam(name = "nickname") String nickname) {
+                                                       @RequestBody SignUpRequest signUpRequest) {
 
-        NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
-        kakaoService.setNickname(token, nicknameRequest);
+        kakaoService.setNickname(token, signUpRequest);
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+    }
+
+    @GetMapping("/api/nickname/random")
+    public ResponseEntity<HttpResponse> setRandomNickname() {
+
+        String nickname = nicknameService.generate();
+        NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), nicknameResponse));
     }
 
     @GetMapping("/api/mypage")
