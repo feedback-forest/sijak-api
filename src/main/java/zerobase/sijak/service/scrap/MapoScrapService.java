@@ -31,6 +31,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -44,7 +46,7 @@ public class MapoScrapService {
     private final CareerRepository careerRepository;
     private final LectureService lectureService;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
@@ -227,10 +229,14 @@ public class MapoScrapService {
             String innerText = paragraph.getAttribute("innerHTML");
             String text = paragraph.getText();
             if (text.replace(" ", "").contains("일시") || text.replace(" ", "").contains("일정")) {
+                String timePattern = "\\d{2}:\\d{2} ~ \\d{2}:\\d{2}";
+                Pattern pattern = Pattern.compile(timePattern);
                 log.info("1. text : {}", text);
                 text = text.replace(" ", "");
                 time = text.substring(text.length() - 11).replace("~", " ~ ");
-                log.info("2. time : {}", time);
+                Matcher matcher = pattern.matcher(time);
+                if (!matcher.find()) continue;
+                log.info("2. time regex 통과 : {}", time);
 
                 lecture.setTime(time);
                 lecture = lectureRepository.save(lecture);
