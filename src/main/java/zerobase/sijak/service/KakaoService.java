@@ -162,7 +162,7 @@ public class KakaoService {
                 memberRepository.save(member);
                 log.info("첫 로그인 : 사용자 정보 DB 저장 성공");
             }
-            TokenDTO tokenDTO = kakaoUserService.login(kakaoUserInfo.getEmail(), kakaoUserInfo.getName());
+            TokenDTO tokenDTO = kakaoUserService.login(kakaoUserInfo.getEmail(), kakaoUserInfo.getNickname());
 
             return new ResponseDTO(tokenDTO, isAlreadySaved);
         }
@@ -225,8 +225,6 @@ public class KakaoService {
         member.setAddress(myPageParam.getAddress());
 
         memberRepository.save(member);
-
-
     }
 
     public void validateNickname(String token, NicknameRequest nicknameRequest) {

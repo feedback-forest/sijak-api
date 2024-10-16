@@ -38,7 +38,7 @@ public class SongpaScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapSongpa() throws InterruptedException {
 
         String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
@@ -289,10 +289,14 @@ public class SongpaScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && !(lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
+        else if (lecture.isStatus() && LocalDateTime.now().isAfter(lecture.getDeadline())) {
+            lecture.setStatus(false);
+            lectureRepository.save(lecture);
+            return true;
+        } else if (!lecture.isStatus() && !(lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
             lecture.setStatus(true);
             lectureRepository.save(lecture);
-            return false;
+            return true;
         } else if (lecture.isStatus() && (lectureStatus.trim().equals("마감") || lectureStatus.trim().equals("접수마감"))) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
