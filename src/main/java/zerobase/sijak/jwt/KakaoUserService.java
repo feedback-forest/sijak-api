@@ -24,11 +24,17 @@ public class KakaoUserService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, nickname);
         log.info("authenticationToken: {}", authenticationToken);
 
+        log.info("getObject: {}", authenticationManagerBuilder.getObject());
+        log.info("authenticate: {}", authenticationManagerBuilder.getObject().authenticate(authenticationToken));
+
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("authentication: {}", authentication);
 
         TokenDTO tokenDTO = jwtTokenProvider.generateToken(authentication);
         log.info("사용자 정보를 토대로 토큰 생성 완료 token: {}", tokenDTO);
+        log.info("access : {}", tokenDTO.getAccessToken());
+        log.info("refresh: {}", tokenDTO.getRefreshToken());
+        log.info("grant type: {}", tokenDTO.getGrantType());
         return tokenDTO;
     }
 }
