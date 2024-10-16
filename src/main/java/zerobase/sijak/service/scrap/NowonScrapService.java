@@ -20,10 +20,7 @@ import zerobase.sijak.persist.repository.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -314,6 +311,7 @@ public class NowonScrapService {
 
     private boolean alreadySavedUserJudge(String link, String lectureStatus) {
         log.info("link : {}", link);
+        if (Objects.equals(link, "https://50plus.or.kr/nwc/education-detail.do?id=44297144")) return true;
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
