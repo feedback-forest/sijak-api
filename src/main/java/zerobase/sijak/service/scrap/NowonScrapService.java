@@ -37,7 +37,7 @@ public class NowonScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws InterruptedException {
 
         String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
@@ -317,12 +317,11 @@ public class NowonScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && LocalDateTime.now().isAfter(lecture.getDeadline())) {
+        else if (LocalDateTime.now().isAfter(lecture.getDeadline())) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
-        }
-        else if (!lecture.isStatus() && lectureStatus.trim().equals("수강신청")) {
+        } else if (!lecture.isStatus() && lectureStatus.trim().equals("수강신청")) {
             lecture.setStatus(true);
             lectureRepository.save(lecture);
             return true;

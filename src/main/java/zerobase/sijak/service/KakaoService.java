@@ -282,13 +282,11 @@ public class KakaoService {
             throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
     }
 
-    public void setNickname(String token, NicknameRequest nicknameRequest) {
+    public void setNickname(String token, SignUpRequest signUpRequest) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
-
-        String nickname = nicknameRequest.getNickname();
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
@@ -299,9 +297,12 @@ public class KakaoService {
             throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
 
+        String nickname = signUpRequest.getNickname();
         String pn = member.getProfileNickname();
         validateNickname(NicknameRequest.builder().nickname(nickname).build(), pn);
 
+        member.setAgeRange(signUpRequest.getAgeRange());
+        member.setGender(signUpRequest.getGender());
         member.setProfileNickname(nickname);
         memberRepository.save(member);
     }

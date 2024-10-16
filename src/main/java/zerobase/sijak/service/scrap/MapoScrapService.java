@@ -266,7 +266,7 @@ public class MapoScrapService {
         Lecture lecture = lectureRepository.findByLink(link);
 
         if (lecture == null) return false;
-        else if (lecture.isStatus() && LocalDateTime.now().isAfter(lecture.getDeadline())) {
+        else if (LocalDateTime.now().isAfter(lecture.getDeadline())) {
             lecture.setStatus(false);
             lectureRepository.save(lecture);
             return true;
