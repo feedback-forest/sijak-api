@@ -10,7 +10,6 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class NicknameService {
 
-
     // 형용사 배열
     private final String[] ADJECTIVES = {
             "행복한", "똑똑한", "즐거운", "강한", "빠른", "재치있는", "충성스러운", "멋진", "훌륭한", "즐거운", "아름다운", "기쁜", "사랑스러운", "행복한", "환상적인", "놀라운", "훌륭한", "매력적인", "긍정적인", "빛나는", "희망찬", "용감한", "따뜻한", "신나는", "친절한", "든든한", "감동적인", "뛰어난", "성실한", "창의적인", "자랑스러운", "유쾌한"
@@ -30,7 +29,7 @@ public class NicknameService {
         // 랜덤 명사
         String noun = NOUNS[RANDOM.nextInt(NOUNS.length)];
 
-        // 생성한 닉네임 반환 (Ex. 놀라운 469번째 호랑이)
-        return MessageFormat.format("{0} {1}", adjective, noun);
+        return MessageFormat.format("{0}{1}", adjective, noun);
     }
+
 }

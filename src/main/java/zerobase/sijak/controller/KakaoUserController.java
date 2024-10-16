@@ -60,15 +60,23 @@ public class KakaoUserController {
 
     @PostMapping("/api/nickname")
     public ResponseEntity<HttpResponse> updateNickname(@RequestHeader("Authorization") String token,
-                                                       @RequestParam(name = "nickname") String nickname) {
+                                                       @RequestBody SignUpRequest signUpRequest) {
 
-        NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
-        kakaoService.setNickname(token, nicknameRequest);
+        kakaoService.setNickname(token, signUpRequest);
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
+    @GetMapping("/api/nickname")
+    public ResponseEntity<HttpResponse> setBasicNickname() {
+
+        String nickname = nicknameService.generate();
+        NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();
+
+        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), nicknameResponse));
+    }
+
     @PostMapping("/api/nickname/random")
-    public ResponseEntity<HttpResponse> randomNickname(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<HttpResponse> randomNickname() {
 
         String nickname = nicknameService.generate();
         NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();

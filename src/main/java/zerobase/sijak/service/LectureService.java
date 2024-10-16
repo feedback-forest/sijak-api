@@ -217,8 +217,10 @@ public class LectureService {
             if (lastDate == null) {
                 lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
             }
-            dDay = ChronoUnit.DAYS.between(lastDate, curDate);
+            dDay = ChronoUnit.DAYS.between(curDate, lastDate);
+            log.info("lastDate: {} / curDate: {} / dDay: {}", lastDate, curDate, dDay);
             if (dDay < 0) {
+                log.info("마감입니다. dDay: {}", dDay);
                 lecture.setStatus(false); // D-day가 끝났으면 마감처리
             }
 
@@ -296,8 +298,10 @@ public class LectureService {
             if (lastDate == null) {
                 lastDate = LocalDate.parse(lecture.getStartDate(), DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
             }
-            dDay = ChronoUnit.DAYS.between(lastDate, curDate);
+            dDay = ChronoUnit.DAYS.between(curDate, lastDate);
+            log.info("lastDate: {} / curDate: {} / dDay: {}", lastDate, curDate, dDay);
             if (dDay < 0) {
+                log.info("마감입니다. dDay: {}", dDay);
                 lecture.setStatus(false); // D-day가 끝났으면 마감처리
             }
 
