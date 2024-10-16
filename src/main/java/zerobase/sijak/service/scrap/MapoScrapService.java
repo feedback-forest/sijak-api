@@ -31,6 +31,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -140,8 +142,8 @@ public class MapoScrapService {
 
                             Lecture lecture = Lecture.builder()
                                     .name(name)
-                                    .time(time)
                                     .price(price)
+                                    .time("00:00 ~ 00:00")
                                     .capacity(capacity)
                                     .status(true)
                                     .deadline(deadline)
@@ -222,24 +224,38 @@ public class MapoScrapService {
         log.info("333");
 
 
-        String target = "", location = "", description = "";
+        String target = "", location = "", description = "", time = "";
         for (WebElement paragraph : paragraphs) {
             String innerText = paragraph.getAttribute("innerHTML");
-            if (innerText.contains("대상")) {
+            String text = paragraph.getText();
+            if (text.replace(" ", "").contains("일시") || text.replace(" ", "").contains("일정")) {
+                String timePattern = "\\d{2}:\\d{2} ~ \\d{2}:\\d{2}";
+                Pattern pattern = Pattern.compile(timePattern);
+                log.info("1. text : {}", text);
+                text = text.replace(" ", "");
+                time = text.substring(text.length() - 11).replace("~", " ~ ");
+                Matcher matcher = pattern.matcher(time);
+                if (!matcher.find()) continue;
+                log.info("2. time regex 통과 : {}", time);
+
+                lecture.setTime(time);
+                lecture = lectureRepository.save(lecture);
+            }
+            if (text.replace(" ", "").contains("대상")) {
                 log.info("대상");
-                target = paragraph.getText().split(":")[1].trim();
+                target = text.split(":")[1].trim();
                 lecture.setTarget(target);
                 lecture = lectureRepository.save(lecture);
             }
-            if (innerText.contains("장소")) {
+            if (text.replace(" ", "").contains("장소")) {
                 log.info("장소");
-                location = paragraph.getText().split(":")[1].trim();
+                location = text.split(":")[1].trim();
                 lecture.setLocation(location);
                 lecture = lectureRepository.save(lecture);
             }
-            if (innerText.contains("내용")) {
+            if (text.replace(" ", "").contains("내용")) {
                 log.info("내용");
-                description = paragraph.getText().split(":")[1].trim();
+                description = text.split(":")[1].trim();
                 lecture.setDescription(description);
                 lecture = lectureRepository.save(lecture);
             }
