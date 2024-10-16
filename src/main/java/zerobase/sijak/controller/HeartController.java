@@ -26,9 +26,10 @@ public class HeartController {
     @GetMapping("/hearts")
     public ResponseEntity<HttpResponse> readHearts(@RequestHeader("Authorization") String token,
                                                    @RequestParam(defaultValue = "0") int page,
-                                                   @RequestParam(defaultValue = "10") int size) {
+                                                   @RequestParam(defaultValue = "10") int size,
+                                                   @RequestParam(name = "mode") boolean mode) {
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> hearts = heartService.readHearts(token, pageable);
+        Slice<LectureHomeResponse> hearts = heartService.readHearts(token, mode, pageable);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", hearts.getContent());

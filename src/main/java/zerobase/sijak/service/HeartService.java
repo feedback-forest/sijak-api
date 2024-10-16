@@ -37,7 +37,7 @@ public class HeartService {
         return heartRepository.existsByLectureIdAndMemberId(lectureId, memberId);
     }
 
-    public Slice<LectureHomeResponse> readHearts(String token, Pageable pageable) {
+    public Slice<LectureHomeResponse> readHearts(String token, boolean mode, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
@@ -51,6 +51,7 @@ public class HeartService {
         Slice<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
 
         List<LectureHomeResponse> lecturesResponse = lectures.getContent().stream()
+                .filter(lecture -> !mode || lecture.isStatus())
                 .map(lecture -> {
                     boolean isHeart = isHearted(lecture.getId(), member.getId());
                     String[] addressList = lecture.getAddress().split(" ");
