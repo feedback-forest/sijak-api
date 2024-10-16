@@ -66,17 +66,8 @@ public class KakaoUserController {
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
     }
 
-    @GetMapping("/api/nickname")
-    public ResponseEntity<HttpResponse> setBasicNickname() {
-
-        String nickname = nicknameService.generate();
-        NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();
-
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), nicknameResponse));
-    }
-
-    @PostMapping("/api/nickname/random")
-    public ResponseEntity<HttpResponse> randomNickname() {
+    @GetMapping("/api/nickname/random")
+    public ResponseEntity<HttpResponse> setRandomNickname() {
 
         String nickname = nicknameService.generate();
         NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();
