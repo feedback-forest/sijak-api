@@ -2,6 +2,7 @@ package zerobase.sijak.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -29,11 +30,12 @@ public class HeartController {
                                                    @RequestParam(defaultValue = "10") int size,
                                                    @RequestParam(name = "mode") boolean mode) {
         Pageable pageable = PageRequest.of(page, size);
-        Slice<LectureHomeResponse> hearts = heartService.readHearts(token, mode, pageable);
+        Page<LectureHomeResponse> hearts = heartService.readHearts(token, mode, pageable);
 
         Map<String, Object> totalList = new HashMap<>();
         totalList.put("data", hearts.getContent());
         totalList.put("hasNext", hearts.hasNext());
+        totalList.put("totalPage", hearts.getTotalPages());
 
         return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
     }

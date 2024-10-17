@@ -1,5 +1,6 @@
 package zerobase.sijak.persist.repository;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +28,14 @@ public interface HeartRepository extends JpaRepository<Heart, Integer> {
             "JOIN Heart h ON h.lecture.id = l.id " +
             "WHERE h.member.id = :memberId " +
             "ORDER BY l.status DESC")
-    Slice<Lecture> findLecturesByMemberIdOrderByStatus(@Param("memberId") Integer memberId, Pageable pageable);
+    Page<Lecture> findLecturesByMemberIdOrderByStatus(@Param("memberId") Integer memberId, Pageable pageable);
+
+
+    @Query("SELECT COUNT(l) FROM Lecture l " +
+            "JOIN Heart h ON h.lecture.id = l.id " +
+            "WHERE h.member.id = :memberId " +
+            "AND (:mode = false OR l.status = true)")
+    long countByLectureIdAndMemberIdAndMode(@Param("memberId") Integer memberId, @Param("mode") boolean mode);
 
     @Modifying
     @Transactional
