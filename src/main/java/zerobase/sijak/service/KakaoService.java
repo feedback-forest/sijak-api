@@ -234,13 +234,13 @@ public class KakaoService {
         // 회원이 아닌 경우
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             if (nickname == null || nickname.isEmpty())
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("자음, 모음은 닉네임 설정 불가합니다.", ErrorCode.INVALID_CHARACTER_NICKNAME);
             if (memberRepository.existsByProfileNickname(nickname))
-                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
         }
         // 회원인 경우
         else {
@@ -256,13 +256,13 @@ public class KakaoService {
             String pn = member.getProfileNickname();
             if (nickname.equals(pn)) return;
             if (nickname == null || nickname.isEmpty())
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+                throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
             if (memberRepository.existsByProfileNickname(nickname))
-                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
         }
 
     }
@@ -273,13 +273,13 @@ public class KakaoService {
 
         if (nickname.equals(curNickname)) return;
         if (nickname == null || nickname.isEmpty())
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
         if (nickname.length() < 2 || nickname.length() > 12)
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
         if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_NICKNAME);
+            throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
         if (memberRepository.existsByProfileNickname(nickname))
-            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요. 다른 닉네임을 적어주세요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
     }
 
     public void setNickname(String token, SignUpRequest signUpRequest) {

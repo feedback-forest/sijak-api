@@ -3,9 +3,7 @@ package zerobase.sijak.service;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.LectureHomeResponse;
@@ -37,7 +35,7 @@ public class HeartService {
         return heartRepository.existsByLectureIdAndMemberId(lectureId, memberId);
     }
 
-    public Slice<LectureHomeResponse> readHearts(String token, boolean mode, Pageable pageable) {
+    public Page<LectureHomeResponse> readHearts(String token, boolean mode, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
         }
@@ -48,7 +46,7 @@ public class HeartService {
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
 
-        Slice<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
+        Page<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
 
         List<LectureHomeResponse> lecturesResponse = lectures.getContent().stream()
                 .filter(lecture -> !mode || lecture.isStatus())
@@ -74,7 +72,9 @@ public class HeartService {
                             .heart(isHeart).build();
                 }).toList();
 
-        return new SliceImpl<>(lecturesResponse, pageable, lectures.hasNext());
+        long totalElements = heartRepository.countByLectureIdAndMemberIdAndMode(member.getId(), mode);
+        log.info("totalElements: {}", totalElements);
+        return new PageImpl<>(lecturesResponse, pageable, totalElements);
     }
 
     public void appendHeart(String token, int lectureId) {
