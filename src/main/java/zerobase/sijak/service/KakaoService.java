@@ -237,7 +237,7 @@ public class KakaoService {
                 throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
                 throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
-            if (nickname.matches(".*[ㄱ-ㅎㅏ-ㅣ]+.*"))
+            if (nickname.matches(".*[ㄱ-ㅎㅏ-ㅣ].*"))
                 throw new InvalidNicknameException("자음, 모음은 닉네임 설정 불가합니다.", ErrorCode.INVALID_CV_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
                 throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
@@ -261,6 +261,8 @@ public class KakaoService {
                 throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
                 throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+            if (nickname.matches(".*[ㄱ-ㅎㅏ-ㅣ].*"))
+                throw new InvalidNicknameException("자음, 모음은 닉네임 설정 불가합니다.", ErrorCode.INVALID_CV_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
                 throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
             if (memberRepository.existsByProfileNickname(nickname))
