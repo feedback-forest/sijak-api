@@ -26,10 +26,15 @@ public class NicknameService {
     public String generate() {
         // 랜덤 형용사
         String adjective = ADJECTIVES[RANDOM.nextInt(ADJECTIVES.length)];
+
+        // 랜덤 숫자
+        int randomNumber = RANDOM.nextInt(10000);
+        String randomInt = String.format("%04d", randomNumber);
+
         // 랜덤 명사
         String noun = NOUNS[RANDOM.nextInt(NOUNS.length)];
 
-        return MessageFormat.format("{0}{1}", adjective, noun);
+        return MessageFormat.format("{0}{1}#{2}", adjective, noun, randomInt);
     }
 
 }
