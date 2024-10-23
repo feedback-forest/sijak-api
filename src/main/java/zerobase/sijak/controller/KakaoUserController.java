@@ -26,78 +26,78 @@ public class KakaoUserController {
     private final NicknameService nicknameService;
 
     @GetMapping("/login/callback")
-    public ResponseEntity<HttpResponse> getToken(@RequestParam("code") String code) {
+    public CommonResponse<?> getToken(@RequestParam("code") String code) {
         log.info("get token");
         log.info("code: {}", code);
         ResponseDTO responseDTO = kakaoService.createPrivateToken(code);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), responseDTO));
+        return CommonResponse.of(responseDTO);
     }
 
     @PostMapping("/api/logout")
-    public ResponseEntity<HttpResponse> logout(@RequestHeader("Authorization") String token) {
+    public CommonResponse<?> logout(@RequestHeader("Authorization") String token) {
         log.info("logout");
         kakaoService.logout(token);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        return CommonResponse.of("success");
     }
 
     @PostMapping("/api/agree")
-    public ResponseEntity<HttpResponse> agree(@RequestHeader("Authorization") String token, @RequestBody AgreeInfo agreeInfo) {
+    public CommonResponse<?> agree(@RequestHeader("Authorization") String token, @RequestBody AgreeInfo agreeInfo) {
         log.info("agree");
         kakaoService.saveAgree(token, agreeInfo);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        return CommonResponse.of("success");
     }
 
     @PostMapping("/api/nickname/validate")
-    public ResponseEntity<HttpResponse> setNickname(@RequestHeader("Authorization") String token,
-                                                    @RequestParam(name = "nickname") String nickname) {
+    public CommonResponse<?> setNickname(@RequestHeader("Authorization") String token,
+                                         @RequestParam(name = "nickname") String nickname) {
 
         NicknameRequest nicknameRequest = NicknameRequest.builder().nickname(nickname).build();
         kakaoService.validateNickname(token, nicknameRequest);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        return CommonResponse.of("success");
     }
 
     @PostMapping("/api/nickname")
-    public ResponseEntity<HttpResponse> updateNickname(@RequestHeader("Authorization") String token,
-                                                       @RequestBody SignUpRequest signUpRequest) {
+    public CommonResponse<?> updateNickname(@RequestHeader("Authorization") String token,
+                                            @RequestBody SignUpRequest signUpRequest) {
 
         kakaoService.setNickname(token, signUpRequest);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        return CommonResponse.of("success");
     }
 
     @GetMapping("/api/nickname/random")
-    public ResponseEntity<HttpResponse> setRandomNickname() {
+    public CommonResponse<?> setRandomNickname() {
 
         String nickname = nicknameService.generate();
         NicknameResponse nicknameResponse = NicknameResponse.builder().nickname(nickname).build();
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), nicknameResponse));
+        return CommonResponse.of(nicknameResponse);
     }
 
     @GetMapping("/api/mypage")
-    public ResponseEntity<HttpResponse> getMyPage(@RequestHeader("Authorization") String token) {
+    public CommonResponse<?> getMyPage(@RequestHeader("Authorization") String token) {
         MyPageResponse myPageResponse = kakaoService.getMyPage(token);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), myPageResponse));
+        return CommonResponse.of(myPageResponse);
     }
 
     @PatchMapping("/api/mypage/address")
-    public ResponseEntity<HttpResponse> updateAddress(@RequestHeader("Authorization") String token,
-                                                      @RequestBody PositionInfo positionInfo) throws JsonProcessingException {
+    public CommonResponse<?> updateAddress(@RequestHeader("Authorization") String token,
+                                           @RequestBody PositionInfo positionInfo) throws JsonProcessingException {
         GeoResponse geoResponse = kakaoService.updateAddress(token, positionInfo);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), geoResponse));
+        return CommonResponse.of(geoResponse);
     }
 
     @PatchMapping("/api/mypage")
-    public ResponseEntity<HttpResponse> updateMyPage(@RequestHeader("Authorization") String token,
-                                                     @RequestBody MyPageRequest myPageRequest) {
+    public CommonResponse<?> updateMyPage(@RequestHeader("Authorization") String token,
+                                          @RequestBody MyPageRequest myPageRequest) {
 
         MyPageParam myPageParam = MyPageParam.builder()
                 .nickname(myPageRequest.getNickname())
                 .address(myPageRequest.getAddress()).build();
 
         kakaoService.updateMyPage(token, myPageParam);
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), "success"));
+        return CommonResponse.of("success");
     }
 
 
