@@ -25,9 +25,9 @@ public class LectureController {
     private final LectureService lectureService;
 
     @PostMapping("/home")
-    public ResponseEntity<HttpResponse> readHome(@RequestHeader("Authorization") String token,
-                                                 @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "4") int size) {
+    public CommonResponse<?> readHome(@RequestHeader("Authorization") String token,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "4") int size) {
 
 
         Pageable pageable = PageRequest.of(page, size);
@@ -41,13 +41,13 @@ public class LectureController {
         totalList.put("pickClasses", pickClasses);
         totalList.put("markerClasses", markerClasses);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
+        return CommonResponse.of(totalList);
     }
 
     @PostMapping("/lectures")
-    public ResponseEntity<HttpResponse> readLectures(@RequestHeader("Authorization") String token,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "9") int size) {
+    public CommonResponse<?> readLectures(@RequestHeader("Authorization") String token,
+                                          @RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "9") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readLectures(token, pageable);
@@ -56,14 +56,14 @@ public class LectureController {
         totalList.put("data", lectures.getContent());
         totalList.put("hasNext", lectures.hasNext());
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), totalList));
+        return CommonResponse.of(totalList);
     }
 
     @PostMapping("/location")
-    public ResponseEntity<HttpResponse> readLocation(@RequestHeader("Authorization") String token,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "4") int size,
-                                                     @RequestParam(value = "location") String location) {
+    public CommonResponse<?> readLocation(@RequestHeader("Authorization") String token,
+                                          @RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "4") int size,
+                                          @RequestParam(value = "location") String location) {
 
         Pageable pageable = PageRequest.of(page, size);
         Slice<LectureHomeResponse> lectures = lectureService.readLectureByLocation(token, location, pageable);
@@ -72,15 +72,15 @@ public class LectureController {
         lectureByLocationList.put("data", lectures.getContent());
         lectureByLocationList.put("hasNext", lectures.hasNext());
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), lectureByLocationList));
+        return CommonResponse.of(lectureByLocationList);
     }
 
     @PostMapping("/lectures/{id}")
-    public ResponseEntity<HttpResponse> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id) {
+    public CommonResponse<?> readLecture(@RequestHeader("Authorization") String token, @PathVariable int id) {
 
         LectureDetailResponse lectureDetailResponse = lectureService.readLecture(token, id);
 
-        return ResponseEntity.ok(HttpResponse.res(HttpStatus.OK.value(), HttpStatus.OK.toString(), lectureDetailResponse));
+        return CommonResponse.of(lectureDetailResponse);
     }
 
 

@@ -1,7 +1,6 @@
 package zerobase.sijak.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +32,6 @@ import zerobase.sijak.persist.repository.TermRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,7 +76,7 @@ public class KakaoService {
 
     public void logout(String token) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -88,7 +85,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         Long kakaoId = member.getKakaoUserId();
@@ -180,7 +177,7 @@ public class KakaoService {
     public MyPageResponse getMyPage(String token) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -189,7 +186,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
 
@@ -210,7 +207,7 @@ public class KakaoService {
     public void updateMyPage(String token, MyPageParam myPageParam) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -218,7 +215,7 @@ public class KakaoService {
         log.info("email : {}", claims.getSubject());
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         member.setProfileNickname(myPageParam.getNickname());
@@ -234,15 +231,15 @@ public class KakaoService {
         // 회원이 아닌 경우
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
             if (nickname == null || nickname.isEmpty())
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+                throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+                throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
             if (nickname.matches(".*[ㄱ-ㅎㅏ-ㅣ].*"))
-                throw new InvalidNicknameException("자음, 모음은 닉네임 설정 불가합니다.", ErrorCode.INVALID_CV_NICKNAME);
+                throw new CustomException(Code.INVALID_CV_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-                throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
+                throw new CustomException(Code.INVALID_CHARACTER_NICKNAME);
             if (memberRepository.existsByProfileNickname(nickname))
-                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+                throw new CustomException(Code.ALREADY_NICKNAME_EXIST);
         }
         // 회원인 경우
         else {
@@ -252,21 +249,21 @@ public class KakaoService {
 
             Member member = memberRepository.findByAccountEmail(claims.getSubject());
             if (member == null) {
-                throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+                throw new CustomException(Code.EMAIL_NOT_EXIST);
             }
 
             String pn = member.getProfileNickname();
             if (nickname.equals(pn)) return;
             if (nickname == null || nickname.isEmpty())
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+                throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
             if (nickname.length() < 2 || nickname.length() > 12)
-                throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+                throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
             if (nickname.matches(".*[ㄱ-ㅎㅏ-ㅣ].*"))
-                throw new InvalidNicknameException("자음, 모음은 닉네임 설정 불가합니다.", ErrorCode.INVALID_CV_NICKNAME);
+                throw new CustomException(Code.INVALID_CV_NICKNAME);
             if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-                throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
+                throw new CustomException(Code.INVALID_CHARACTER_NICKNAME);
             if (memberRepository.existsByProfileNickname(nickname))
-                throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+                throw new CustomException(Code.ALREADY_NICKNAME_EXIST);
         }
 
     }
@@ -277,19 +274,19 @@ public class KakaoService {
 
         if (nickname.equals(curNickname)) return;
         if (nickname == null || nickname.isEmpty())
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+            throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
         if (nickname.length() < 2 || nickname.length() > 12)
-            throw new InvalidNicknameException("띄어쓰기 없이 2자 ~ 12자까지 가능해요.", ErrorCode.INVALID_LENGTH_NICKNAME);
+            throw new CustomException(Code.INVALID_LENGTH_NICKNAME);
         if (!nickname.matches("^[가-힣a-zA-Z0-9]+$"))
-            throw new InvalidNicknameException("한글, 영문, 숫자만 입력해주세요.", ErrorCode.INVALID_CHARACTER_NICKNAME);
+            throw new CustomException(Code.INVALID_CHARACTER_NICKNAME);
         if (memberRepository.existsByProfileNickname(nickname))
-            throw new AlreadyNicknameExistException("이미 사용중인 닉네임이예요.", ErrorCode.ALREADY_NICKNAME_EXIST);
+            throw new CustomException(Code.ALREADY_NICKNAME_EXIST);
     }
 
     public void setNickname(String token, SignUpRequest signUpRequest) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -298,7 +295,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String nickname = signUpRequest.getNickname();
@@ -313,7 +310,7 @@ public class KakaoService {
 
     public GeoResponse updateAddress(String token, PositionInfo positionInfo) throws JsonProcessingException {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -322,7 +319,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         double latitude = positionInfo.getLatitude();
@@ -340,7 +337,7 @@ public class KakaoService {
 
     public MyPageResponse getUserMypage(String token, int id) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -349,7 +346,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByIdAndAccountEmail(id, claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("해당 유저의 정보가 없습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         MyPageResponse myPageResponse = MyPageResponse.builder()
@@ -391,14 +388,14 @@ public class KakaoService {
             String[] longAddress = geoInfo.documents.get(0).address.address_name.split(" ");
             return longAddress[0] + " " + longAddress[1];
         } else {
-            throw new GeoLocationNotExistException("해당 위도, 경도에 대한 행정구역을 알 수 없습니다.", ErrorCode.GEOLOCATION_NOT_EXIST);
+            throw new CustomException(Code.GEOLOCATION_NOT_EXIST);
         }
     }
 
     public void saveAgree(String token, AgreeInfo agreeInfo) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
@@ -407,7 +404,7 @@ public class KakaoService {
 
         Member member = memberRepository.findByAccountEmail(claims.getSubject());
         if (member == null) {
-            throw new EmailNotExistException("유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.EMAIL_NOT_EXIST);
         }
 
         List<String> agreeItems = agreeInfo.getAgreeItems();

@@ -8,16 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController {
 
-    @Value("${client-id}")
-    private String CLIENT_ID;
-
-    @Value("${redirect-uri}")
-    private String REDIRECT_URI;
-
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("CLIENT_ID", CLIENT_ID);
-        model.addAttribute("REDIRECT_URI", REDIRECT_URI);
+    public String index() {
         return "index";
     }
 
