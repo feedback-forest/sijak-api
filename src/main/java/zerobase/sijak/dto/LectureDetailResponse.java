@@ -53,6 +53,9 @@ public class LectureDetailResponse {
     @JsonProperty("d_day")
     private long dDay;
 
+    @JsonProperty("heart_count")
+    private int heartCount;
+
     private String category;
 
     private String condition;
