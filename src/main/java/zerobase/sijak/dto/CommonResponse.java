@@ -1,9 +1,7 @@
 package zerobase.sijak.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 import zerobase.sijak.exception.Code;
 
 @Getter

@@ -36,14 +36,15 @@ public class HeartService {
 
     public Page<LectureHomeResponse> readHearts(String token, boolean mode, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new CustomException(Code.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Page<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
 
@@ -78,14 +79,15 @@ public class HeartService {
 
     public void appendHeart(String token, int lectureId) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new CustomException(Code.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new CustomException(Code.LECTURE_ID_NOT_EXIST));
@@ -103,14 +105,15 @@ public class HeartService {
 
     public void deleteHeart(String token, int lectureId) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new CustomException(Code.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new CustomException(Code.LECTURE_ID_NOT_EXIST));
@@ -125,14 +128,15 @@ public class HeartService {
     public void deleteDeactivatedHearts(String token) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new CustomException(Code.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         heartRepository.deleteClosedLecturesFromHearts(member.getId());
     }

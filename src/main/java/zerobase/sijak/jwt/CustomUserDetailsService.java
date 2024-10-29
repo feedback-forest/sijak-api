@@ -7,29 +7,30 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import zerobase.sijak.persist.repository.KakaoRepository;
+import zerobase.sijak.persist.domain.Member;
+import zerobase.sijak.persist.repository.MemberRepository;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final KakaoRepository kakaoRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return kakaoRepository
-                .findByEmail(email)
+    public UserDetails loadUserByUsername(String kakaoUserId) throws UsernameNotFoundException {
+        return memberRepository
+                .findByKakaoUserId(kakaoUserId)
                 .map(this::createUserDetails)
                 .orElseThrow(
                         () -> new UsernameNotFoundException("해당 유저가 존재하지 않습니다.")
                 );
     }
 
-    private UserDetails createUserDetails(KakaoUser kakaouser) {
+    private UserDetails createUserDetails(Member member) {
         return User.builder()
-                .username(kakaouser.getEmail())
-                .password(passwordEncoder.encode(kakaouser.getNickname()))
+                .username(member.getKakaoUserId())
+                .password(passwordEncoder.encode(member.getProfileNickname()))
                 .roles("USER")
                 .build();
     }

@@ -78,10 +78,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDescViewDesc(pageable);
@@ -148,10 +147,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDesc(pageable);
@@ -273,10 +271,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
             log.info("회원입니다. email: {}", claims.getSubject());
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
 //            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
 //            dist = Math.round(dist * 10.0) / 10.0;
@@ -389,10 +386,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             List<Lecture> topLectures = lectureRepository.findTop6ByStatusTrueOrderByViewDesc();
 
@@ -459,10 +455,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             loc = loc.replace("\"", " ").replace("\'", " ").trim();

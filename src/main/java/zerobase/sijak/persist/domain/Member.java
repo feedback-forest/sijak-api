@@ -4,11 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import zerobase.sijak.dto.kakao.KakaoUserInfo;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor
@@ -24,7 +29,7 @@ public class Member {
 
     @Column(name = "kakao_user_id", unique = true, nullable = false)
     @JsonProperty("kakao_user_id")
-    private Long kakaoUserId;
+    private String kakaoUserId;
 
     @Column(name = "account_email", unique = true, nullable = false)
     @JsonProperty("account_email")
@@ -79,7 +84,7 @@ public class Member {
     private List<Term> terms = new ArrayList<>();
 
     public Member(KakaoUserInfo kakaoUserInfo) {
-        this.kakaoUserId = kakaoUserInfo.getKakaoUserId();
+        this.kakaoUserId = String.valueOf(kakaoUserInfo.getKakaoUserId());
         this.accountEmail = kakaoUserInfo.getEmail();
         this.profileNickname = kakaoUserInfo.getNickname();
         this.birth = kakaoUserInfo.getBirth();
