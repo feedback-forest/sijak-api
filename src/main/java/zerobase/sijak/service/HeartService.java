@@ -16,7 +16,6 @@ import zerobase.sijak.persist.repository.HeartRepository;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -37,14 +36,15 @@ public class HeartService {
 
     public Page<LectureHomeResponse> readHearts(String token, boolean mode, Pageable pageable) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Page<Lecture> lectures = heartRepository.findLecturesByMemberIdOrderByStatus(member.getId(), pageable);
 
@@ -79,20 +79,21 @@ public class HeartService {
 
     public void appendHeart(String token, int lectureId) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+                .orElseThrow(() -> new CustomException(Code.LECTURE_ID_NOT_EXIST));
 
         if (heartRepository.existsByLectureIdAndMemberId(lectureId, member.getId())) {
-            throw new AlreadyHeartException("이미 찜한 강의입니다.", ErrorCode.ALREADY_PUSH_HEART);
+            throw new CustomException(Code.ALREADY_PUSH_HEART);
         }
 
         Heart heart = Heart.builder()
@@ -104,21 +105,22 @@ public class HeartService {
 
     public void deleteHeart(String token, int lectureId) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+                .orElseThrow(() -> new CustomException(Code.LECTURE_ID_NOT_EXIST));
 
         Heart heart = heartRepository.findByLectureIdAndMemberId(lectureId, member.getId());
 
-        if (heart == null) throw new HeartRemoveException("찜클래스 삭제에 실패했습니다.", ErrorCode.HEART_REMOVE_FAILED);
+        if (heart == null) throw new CustomException(Code.HEART_REMOVE_FAILED);
 
         heartRepository.delete(heart);
     }
@@ -126,14 +128,15 @@ public class HeartService {
     public void deleteDeactivatedHearts(String token) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         heartRepository.deleteClosedLecturesFromHearts(member.getId());
     }

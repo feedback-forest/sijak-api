@@ -9,14 +9,14 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.dto.*;
-import zerobase.sijak.exception.EmailNotExistException;
-import zerobase.sijak.exception.ErrorCode;
-import zerobase.sijak.exception.IdNotExistException;
+import zerobase.sijak.exception.Code;
+import zerobase.sijak.exception.CustomException;
 import zerobase.sijak.jwt.JwtTokenProvider;
 import zerobase.sijak.persist.domain.Educate;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Member;
 import zerobase.sijak.persist.repository.EducateRepository;
+import zerobase.sijak.persist.repository.HeartRepository;
 import zerobase.sijak.persist.repository.LectureRepository;
 import zerobase.sijak.persist.repository.MemberRepository;
 
@@ -40,6 +40,7 @@ public class LectureService {
 
     private final double EARTH_RADIUS_KM = 6371.0;
     private final EducateRepository educateRepository;
+    private final HeartRepository heartRepository;
 
     public Slice<LectureHomeResponse> readHome(String token, Pageable pageable) {
 
@@ -77,10 +78,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDescViewDesc(pageable);
@@ -147,10 +147,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             Slice<Lecture> lectures = lectureRepository.findAllByOrderByStatusDesc(pageable);
@@ -187,7 +186,7 @@ public class LectureService {
 
         Lecture lecture = lectureRepository
                 .findById(id)
-                .orElseThrow(() -> new IdNotExistException("해당 강의 id가 존재하지 않습니다.", ErrorCode.LECTURE_ID_NOT_EXIST));
+                .orElseThrow(() -> new CustomException(Code.LECTURE_ID_NOT_EXIST));
 
         lecture.setView(lecture.getView() + 1);  // 조회수 증가
         lecture = lectureRepository.save(lecture);
@@ -231,6 +230,7 @@ public class LectureService {
                 plan.put(i, String.valueOf(educateList.get(i - 1).getContent()));
             }
 
+            int heart_count = heartRepository.countHeartByLectureId(lecture.getId());
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -250,6 +250,7 @@ public class LectureService {
                     .condition(lecture.getTarget())
                     .latitude(lecture.getLatitude())
                     .longitude(lecture.getLongitude())
+                    .heartCount(heart_count)
                     .category("미정")
                     .dDay(-dDay)
                     .plan(plan)
@@ -270,10 +271,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
             log.info("회원입니다. email: {}", claims.getSubject());
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
 //            double dist = calculateDistance(latitude, longitude, lecture.getLatitude(), lecture.getLongitude()) * 1000;
 //            dist = Math.round(dist * 10.0) / 10.0;
@@ -312,6 +312,7 @@ public class LectureService {
                 plan.put(i, String.valueOf(educateList.get(i - 1).getContent()));
             }
 
+            int heart_count = heartRepository.countHeartByLectureId(lecture.getId());
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -335,6 +336,7 @@ public class LectureService {
                     .dDay(-dDay)
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
+                    .heartCount(heart_count)
                     .category("미정")
                     .textBookName(lecture.getTextBookName())
                     .textBookPrice(lecture.getTextBookPrice())
@@ -384,10 +386,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             List<Lecture> topLectures = lectureRepository.findTop6ByStatusTrueOrderByViewDesc();
 
@@ -454,10 +455,9 @@ public class LectureService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("readLectures: token not null");
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new EmailNotExistException("해당 유저 email이 존재하지 않습니다.", ErrorCode.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             log.info("readLectures: member email {}", member.getAccountEmail());
             loc = loc.replace("\"", " ").replace("\'", " ").trim();

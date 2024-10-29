@@ -37,6 +37,11 @@ public interface HeartRepository extends JpaRepository<Heart, Integer> {
             "AND (:mode = false OR l.status = true)")
     long countByLectureIdAndMemberIdAndMode(@Param("memberId") Integer memberId, @Param("mode") boolean mode);
 
+    @Query("SELECT COUNT(h) " +
+            "FROM Heart h " +
+            "WHERE h.lecture.id = :lectureId")
+    int countHeartByLectureId(@Param("lectureId") Integer lectureId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM Heart h " +
