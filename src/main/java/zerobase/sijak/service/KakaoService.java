@@ -32,6 +32,7 @@ import zerobase.sijak.persist.repository.TermRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -76,19 +77,18 @@ public class KakaoService {
 
     public void logout(String token) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
-        log.info("email : {}", claims.getSubject());
+        log.info("kakaoUserID : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
-        Long kakaoId = member.getKakaoUserId();
+        String kakaoId = member.getKakaoUserId();
 
         WebClient webClient = WebClient.create(PUBLIC_LOGOUT_URI);
         log.info("webClient : {}", webClient.toString());
@@ -96,7 +96,7 @@ public class KakaoService {
                 .uri(PUBLIC_LOGOUT_URI)
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header("Authorization", "KakaoAK " + ADMIN_KEY)
-                .bodyValue("target_id_type=user_id&target_id=" + String.valueOf(kakaoId))
+                .bodyValue("target_id_type=user_id&target_id=" + kakaoId)
                 .retrieve();
     }
 
@@ -150,16 +150,14 @@ public class KakaoService {
                     .ageRange(profile.getKakao_account().getAge_range())
                     .phoneNumber(profile.getKakao_account().getPhone_number()).build();
 
-            boolean isAlreadySaved = alreadySavedUserJudge(kakaoUserInfo.getEmail());
+            boolean isAlreadySaved = alreadySavedUserJudge(String.valueOf(kakaoUserInfo.getKakaoUserId()));
 
             if (isAlreadySaved) {
-                KakaoUser kakaoUser = new KakaoUser(kakaoUserInfo);
                 Member member = new Member(kakaoUserInfo);
-                kakaoRepository.save(kakaoUser);
                 memberRepository.save(member);
                 log.info("첫 로그인 : 사용자 정보 DB 저장 성공");
             }
-            TokenDTO tokenDTO = kakaoUserService.login(kakaoUserInfo.getEmail(), kakaoUserInfo.getNickname());
+            TokenDTO tokenDTO = kakaoUserService.login(String.valueOf(kakaoUserInfo.getKakaoUserId()), kakaoUserInfo.getNickname());
 
             return new ResponseDTO(tokenDTO, isAlreadySaved);
         }
@@ -167,27 +165,25 @@ public class KakaoService {
     }
 
 
-    private boolean alreadySavedUserJudge(String email) {
-
-        Member member = memberRepository.findByAccountEmail(email);
-        return member == null;
+    private boolean alreadySavedUserJudge(String kakaoUserId) {
+        Optional<Member> member = memberRepository.findByKakaoUserId(kakaoUserId);
+        return member.isEmpty();
     }
 
 
     public MyPageResponse getMyPage(String token) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
-        log.info("email : {}", claims.getSubject());
+        log.info("kakaoUserId : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
 
         MyPageResponse myPageResponse = MyPageResponse.builder()
@@ -207,16 +203,15 @@ public class KakaoService {
     public void updateMyPage(String token, MyPageParam myPageParam) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
-        log.info("email : {}", claims.getSubject());
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        log.info("kakaoUserId : {}", claims.getSubject());
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         member.setProfileNickname(myPageParam.getNickname());
         member.setAddress(myPageParam.getAddress());
@@ -247,10 +242,9 @@ public class KakaoService {
             Claims claims = jwtTokenProvider.parseClaims(jwtToken);
             log.info("email : {}", claims.getSubject());
 
-            Member member = memberRepository.findByAccountEmail(claims.getSubject());
-            if (member == null) {
-                throw new CustomException(Code.EMAIL_NOT_EXIST);
-            }
+            Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                    () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+            );
 
             String pn = member.getProfileNickname();
             if (nickname.equals(pn)) return;
@@ -286,17 +280,16 @@ public class KakaoService {
     public void setNickname(String token, SignUpRequest signUpRequest) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         String nickname = signUpRequest.getNickname();
         String pn = member.getProfileNickname();
@@ -310,17 +303,16 @@ public class KakaoService {
 
     public GeoResponse updateAddress(String token, PositionInfo positionInfo) throws JsonProcessingException {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         double latitude = positionInfo.getLatitude();
         double longitude = positionInfo.getLongitude();
@@ -337,17 +329,16 @@ public class KakaoService {
 
     public MyPageResponse getUserMypage(String token, int id) {
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByIdAndAccountEmail(id, claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByIdAndKakaoUserId(id, claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         MyPageResponse myPageResponse = MyPageResponse.builder()
                 .nickname(member.getProfileNickname())
@@ -395,17 +386,16 @@ public class KakaoService {
     public void saveAgree(String token, AgreeInfo agreeInfo) {
 
         if (token == null || token.isEmpty() || token.trim().equals("Bearer")) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
+            throw new CustomException(Code.KAKAO_ID_NOT_EXIST);
         }
 
         String jwtToken = token.substring(7);
         Claims claims = jwtTokenProvider.parseClaims(jwtToken);
         log.info("email : {}", claims.getSubject());
 
-        Member member = memberRepository.findByAccountEmail(claims.getSubject());
-        if (member == null) {
-            throw new CustomException(Code.EMAIL_NOT_EXIST);
-        }
+        Member member = memberRepository.findByKakaoUserId(claims.getSubject()).orElseThrow(
+                () -> new CustomException(Code.KAKAO_ID_NOT_EXIST)
+        );
 
         List<String> agreeItems = agreeInfo.getAgreeItems();
 

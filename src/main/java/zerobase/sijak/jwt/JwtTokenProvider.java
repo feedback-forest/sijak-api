@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import zerobase.sijak.dto.kakao.TokenDTO;
+import zerobase.sijak.exception.Code;
+import zerobase.sijak.exception.CustomException;
 
 import java.security.Key;
 import java.util.Arrays;
@@ -23,6 +25,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class JwtTokenProvider {
+
+    private static final String BEARER_TYPE = "Bearer";
+    private static final long TOKEN_EXPIRE_TIME = 1000 * 15;
+    private static final long TOKEN_REFRESH_TIME = 1000 * 60 * 60 * 24;
     private final Key key;
 
     //생성자를 통하여 KEY 값을 BASE64로 디코딩(해석)하고 해석한 값을
@@ -42,47 +48,55 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        long now = (new Date()).getTime();
+        Date now = new Date();
         //만기 시간 설정
-        Date accessTokenExpiresIn = new Date(now + 86400000); // 24시간
+        Date accessTokenExpiresIn = new Date(now.getTime() + TOKEN_EXPIRE_TIME);
+        Date refreshTokenExpiresIn = new Date(now.getTime() + TOKEN_REFRESH_TIME);
 
         log.info("Access 토큰 생성 시작!");
-        //접근 토큰 생성
-        String accessToken = Jwts.builder().setSubject(authentication.getName())
+        /**
+         * Access Token 생성
+         *  header "alg" : "HS256"
+         *  payload "auth": "ROLE_USER"
+         *  payload "sub": kakao_id
+         *  payload "iss": "sijak"
+         *  payload "iat": 토큰 발급 시간
+         *  payload "exp" : 토큰 만료 시간
+         */
+        String accessToken = Jwts.builder()
+                .setSubject(authentication.getName())
                 .claim("auth", authorities)
                 .setIssuer("sijak")
-                .setIssuedAt(new Date(now))
+                .setIssuedAt(now)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         log.info("Access 토큰 생성 완료!");
         log.info("Refresh 토큰 생성 시작!");
-        //리프레쉬 토큰 생성
+        // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .setIssuer("sijak")
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + 1209600000)) // 14일
+                .setIssuedAt(now)
+                .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         log.info("Refresh 토큰 생성 완료!");
 
         return TokenDTO.builder()
-                .grantType("Bearer")
+                .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
                 .build();
     }
 
     // 접근 토큰을 이용하여 권한 정보를 받아오는 메서드
     public Authentication getAuthentication(String accessToken) {
         //토큰 복호화
-
         Claims claims = parseClaims(accessToken);
         if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰");
+            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
         Collection<? extends GrantedAuthority> authorities =
@@ -101,15 +115,18 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
+            log.info("잘못된 JWT 서명입니다.", e);
+            throw new CustomException(Code.INVALID_ACCESS_TOKEN);
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
+            log.info("만료된 JWT 토큰입니다.", e);
+            throw new CustomException(Code.EXPIRED_ACCESS_TOKEN);
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
+            log.info("지원되지 않는 JWT 토큰입니다.", e);
+            throw new CustomException(Code.UNSUPPORTED_ACCESS_TOKEN);
         } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
+            log.info("JWT 토큰이 잘못되었습니다.", e);
+            throw new CustomException(Code.WRONG_TYPE_ACCESS_TOKEN);
         }
-        return false;
     }
 
     //토큰을 claims로 변환하는 메서드
@@ -123,5 +140,12 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
+
+
+    public String getKakaoUserId(String token) {
+        String kakaoUserId = parseClaims(token).getSubject();
+        return kakaoUserId;
+    }
+
 }
 

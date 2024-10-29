@@ -1,6 +1,5 @@
 package zerobase.sijak.config;
 
-import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,56 +9,25 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import zerobase.sijak.exception.JwtAccessDeniedHandler;
+import zerobase.sijak.exception.JwtAuthenticationEntryPoint;
 import zerobase.sijak.jwt.JwtAuthenticationFilter;
+import zerobase.sijak.jwt.JwtExceptionFilter;
 import zerobase.sijak.jwt.JwtTokenProvider;
 
-//@Configuration
-//@EnableWebSecurity
-//@RequiredArgsConstructor
-//public class SecurityConfig {
-//    private final JwtTokenProvider jwtTokenProvider;
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//    }
-//
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(
-//                        managementConfigurer -> managementConfigurer
-//                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )
-//                .authorizeHttpRequests(
-//                        requestMatcherRegistry -> requestMatcherRegistry
-//                                .dispatcherTypeMatchers(DispatcherType.FORWARD)
-//                                .permitAll()
-//                                .requestMatchers("/img/**").permitAll()
-//                                .requestMatchers("/css/**").permitAll()
-//                                .requestMatchers("/js/**").permitAll()
-//                                .requestMatchers("/").permitAll()
-//                                .requestMatchers("/sijak/home").permitAll()
-//                                .requestMatchers("/sijak/login").permitAll()
-//                                .requestMatchers("/sijak/class/{id}").permitAll()
-//                                .requestMatchers("/sijak/class/{id}/apply").hasRole("USER")
-//                                .requestMatchers("/sijak/test").hasRole("USER")
-//                                .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-//        return httpSecurity.build();
-//    }
-//}
 
+@Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Configuration
 public class SecurityConfig {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtExceptionFilter jwtExceptionFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -70,20 +38,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        http.formLogin(AbstractHttpConfigurer::disable);
+        http.httpBasic(AbstractHttpConfigurer::disable);
+
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
+        http.exceptionHandling((exceptionConfig) ->
+                exceptionConfig.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler));
+
+        http.with(new JwtSecurityConfig(jwtTokenProvider), Customizer.withDefaults());
+
         http.authorizeHttpRequests(requestMatcherRegistry -> requestMatcherRegistry
+                .requestMatchers("/api/reissue").permitAll()
                 .requestMatchers("/favicon.ico").permitAll()
                 .requestMatchers("/**").permitAll());
 
         http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
                 SessionCreationPolicy.STATELESS));
 
-        http.formLogin(AbstractHttpConfigurer::disable);
-        http.httpBasic(AbstractHttpConfigurer::disable);
-
-
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 

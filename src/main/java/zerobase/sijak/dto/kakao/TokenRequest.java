@@ -1,24 +1,22 @@
 package zerobase.sijak.dto.kakao;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Builder
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-public class TokenDTO {
+@AllArgsConstructor
+public class TokenRequest {
 
-    @JsonProperty("grant_type")
-    private String grantType; // Bearer
-
+    @NotNull
     @JsonProperty("access_token")
     private String accessToken;
 
+    @NotNull
     @JsonProperty("refresh_token")
     private String refreshToken;
-
-    @JsonProperty("access_token_expires_in")
-    private long accessTokenExpiresIn;
 
 }
