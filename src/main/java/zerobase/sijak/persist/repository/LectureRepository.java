@@ -11,7 +11,7 @@ import zerobase.sijak.persist.domain.Lecture;
 import java.util.List;
 
 @Repository
-public interface LectureRepository extends JpaRepository<Lecture, Integer> {
+public interface LectureRepository extends JpaRepository<Lecture, Integer>, LectureQueryDslRepository {
 
     Lecture findByLink(String link);
 
