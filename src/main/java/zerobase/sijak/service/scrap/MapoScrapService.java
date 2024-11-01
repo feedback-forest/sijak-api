@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.exception.Code;
@@ -46,7 +45,7 @@ public class MapoScrapService {
     //@Scheduled(fixedRate = 10000000)
     public void scrapMapo() throws CustomException {
         try {
-            String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "";
+            String name = "", time = "", price = "", href = "", teacherName = "", startDate = "", endDate = "", tel = "";
             int capacity = 1, lId = -1, tId = -1, cId = -1;
             LocalDateTime deadline = LocalDateTime.now();
 
@@ -75,6 +74,10 @@ public class MapoScrapService {
                 WebElement specificTable = driver.findElement(By.xpath("//*[@id=\"bo_list\"]/div/div[1]/table"));
                 WebElement specificTbody = specificTable.findElement(By.tagName("tbody"));
                 List<WebElement> rows = specificTbody.findElements(By.tagName("tr"));
+
+                WebElement telInfo = driver.findElement(By.xpath("//*[@id=\"ft\"]/div[2]/ul/li[1]/p[4]/span"));
+                tel = telInfo.getText().split(":")[1].replace(" ", "");
+                log.info("tel: {}", tel);
                 // 읽을 row 가 없다면 -> 크롤링 종료
                 if (rows.size() == 1) {
                     System.out.println("specificTbody is empty");
@@ -151,6 +154,7 @@ public class MapoScrapService {
                                         .division("정기 클래스")
                                         .latitude(37.556445)
                                         .need("")
+                                        .tel(tel)
                                         .textBookName("")
                                         .textBookPrice("")
                                         .thumbnail("")

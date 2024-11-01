@@ -8,11 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import zerobase.sijak.dto.crawling.LectureCreateRequest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Entity
@@ -31,6 +29,8 @@ public class Lecture {
 
     @Size(max = 1000)
     private String description;
+
+    private String tel;
 
     private String price;
 

@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.exception.Code;
@@ -41,7 +40,7 @@ public class GangseoScrapService {
     //@Scheduled(fixedRate = 10000000)
     public void scrapNowon() throws CustomException {
         try {
-            String name = "", time = "", price = "", href = "", startDate = "", endDate = "";
+            String name = "", time = "", price = "", href = "", startDate = "", endDate = "", tel = "";
             int capacity = 1, lId = -1, tId = -1, cId = -1;
             LocalDateTime deadline = LocalDateTime.now();
             log.info("deadline : {}", deadline);
@@ -92,6 +91,10 @@ public class GangseoScrapService {
                     log.info("저장 여부는 통과");
                     if (!cols.get(cols.size() - 1).getText().trim().equals("수강신청")) continue;
                     log.info("수강신청 여부 통과");
+
+                    WebElement telInfo = driver.findElement(By.xpath("/html/body/footer/div[2]/div[2]/address/a[1]"));
+                    tel = telInfo.getText();
+                    log.info("tel = {}", tel);
 
                     System.out.println("2222");
                     for (int j = 3; j < cols.size(); j++) {
@@ -148,6 +151,7 @@ public class GangseoScrapService {
                                         .certification("")
                                         .dayOfWeek("")
                                         .target("")
+                                        .tel(tel)
                                         .textBookName("")
                                         .textBookPrice("")
                                         .thumbnail("")
