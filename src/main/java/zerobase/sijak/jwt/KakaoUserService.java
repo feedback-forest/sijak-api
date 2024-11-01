@@ -75,7 +75,7 @@ public class KakaoUserService {
 
         // 4. 저장소에서 Kakao User ID 를 기반으로 Refresh Token 값 가져옴
         RefreshToken refreshToken = refreshTokenRepository.findById(authentication.getName())
-                .orElseThrow(() -> new CustomException(Code.USER_UNAUTHORIZED));
+                .orElseThrow(() -> new CustomException(Code.EXPIRED_REFRESH_TOKEN));
 
         // 5. Refresh Token 일치 검사
         if (!refreshToken.getValue().equals(tokenRequest.getRefreshToken())) {

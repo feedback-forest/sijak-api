@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
 
     private static final String BEARER_TYPE = "Bearer";
-    private static final long TOKEN_EXPIRE_TIME = 1000 * 15;
-    private static final long TOKEN_REFRESH_TIME = 1000 * 60 * 60 * 24;
+    private static final long TOKEN_EXPIRE_TIME = 1000 * 20 ;
+    private static final long TOKEN_REFRESH_TIME = 1000 * 60 * 60 * 4;
     private final Key key;
 
     //생성자를 통하여 KEY 값을 BASE64로 디코딩(해석)하고 해석한 값을

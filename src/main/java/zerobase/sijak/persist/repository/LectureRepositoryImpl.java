@@ -40,6 +40,27 @@ public class LectureRepositoryImpl implements LectureQueryDslRepository {
         return new SliceImpl<>(lectures, pageable, hasNext);
     }
 
+    @Override
+    public Slice<Lecture> searchCategoryAndLocation(Pageable pageable, String category, String location) {
+        QLecture lecture = QLecture.lecture;
+
+        List<Lecture> lectures = jpaQueryFactory.selectFrom(lecture)
+                .where(eqCategory(category), eqLocation(location), eqStatusTrue())
+                .orderBy(lecture.deadline.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        System.out.println("lecture cnt = " + lectures.size());
+        boolean hasNext = lectures.size() > pageable.getPageSize();
+
+        if (hasNext) {
+            lectures.remove(lectures.size() - 1); // 다음 페이지 확인용으로 가져온 추가 데이터 제거
+        }
+
+        return new SliceImpl<>(lectures, pageable, hasNext);
+    }
+
     // 제목과 설명에 해당 keyword 가 포함되어있는 강좌를 모두 찾는다.
     private BooleanExpression containsKeyword(String keyword) {
         if (StringUtils.isBlank(keyword)) return null;
@@ -51,6 +72,12 @@ public class LectureRepositoryImpl implements LectureQueryDslRepository {
     private BooleanExpression eqLocation(String location) {
         if (StringUtils.isBlank(location)) return null;
         return QLecture.lecture.address.contains(location);
+    }
+
+    // 해당 카테고리와 일치하는 강좌를 모두 찾는다.
+    private BooleanExpression eqCategory(String category) {
+        if (StringUtils.isBlank(category)) return null;
+        return QLecture.lecture.category.eq(category);
     }
 
     // 활성화된 강좌를 모두 찾는다.

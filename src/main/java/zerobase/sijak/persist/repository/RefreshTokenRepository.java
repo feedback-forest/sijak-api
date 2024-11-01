@@ -22,7 +22,7 @@ public class RefreshTokenRepository {
     public void save(final RefreshToken refreshToken) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(refreshToken.getKakaoUserID(), refreshToken.getRefreshToken());
-        redisTemplate.expire(refreshToken.getKakaoUserID(), 60, TimeUnit.SECONDS);
+        redisTemplate.expire(refreshToken.getKakaoUserID(), 30, TimeUnit.SECONDS);
     }
 
     public Optional<RefreshToken> findById(final String refreshToken) {

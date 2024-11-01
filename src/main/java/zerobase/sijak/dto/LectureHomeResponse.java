@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -53,5 +51,9 @@ public class LectureHomeResponse {
     private String division;
 
     private boolean heart;
+
+    private String category;
+
+    private String price;
 
 }

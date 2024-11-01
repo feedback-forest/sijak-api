@@ -9,4 +9,6 @@ import zerobase.sijak.persist.domain.Lecture;
 public interface LectureQueryDslRepository {
 
     Slice<Lecture> searchKeywordAndLocation(Pageable pageable, String keyword, String location);
+
+    Slice<Lecture> searchCategoryAndLocation(Pageable pageable, String category, String location);
 }
