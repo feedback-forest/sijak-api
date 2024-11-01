@@ -1,6 +1,5 @@
 package zerobase.sijak.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,5 +46,7 @@ public class PickHomeResponse {
     private String link;
 
     private String division;
+
+    private String price;
 
 }

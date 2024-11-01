@@ -34,8 +34,8 @@ public class TokenController {
 
     @PostMapping("/reissue")
     public CommonResponse<?> reissue(@RequestBody TokenRequest tokenRequest,
-                                          HttpServletResponse response) {
-        log.info("response: {}", response);
+                                     HttpServletResponse response) {
+
         log.info("response: {}", response.getStatus());
         TokenDTO tokenDTO = kakaoUserService.reissue(tokenRequest, response);
 

@@ -10,8 +10,7 @@ public enum Code {
     // Success
     OK(0, "success"),
 
-    // Failed
-    // Exception
+    // Failed Exception
 
     // Lecture Exception
     CRAWLING_FAILED(4000, "크롤링 작업 도중 실패했습니다."),
