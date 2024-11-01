@@ -72,6 +72,8 @@ public class QLecture extends EntityPathBase<Lecture> {
 
     public final ListPath<Teacher, QTeacher> teachers = this.<Teacher, QTeacher>createList("teachers", Teacher.class, QTeacher.class, PathInits.DIRECT2);
 
+    public final StringPath tel = createString("tel");
+
     public final StringPath textBookName = createString("textBookName");
 
     public final StringPath textBookPrice = createString("textBookPrice");

@@ -11,6 +11,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.exception.Code;
@@ -41,10 +42,10 @@ public class SongpaScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    //@Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 10000000)
     public void scrapSongpa() throws CustomException {
         try {
-            String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "";
+            String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "", tel = "";
             int capacity = 1, lId = -1, tId = -1, cId = -1;
 
             WebDriverManager.chromedriver().setup();
@@ -68,9 +69,14 @@ public class SongpaScrapService {
                 String url = String.format(SONGPA_URL, idx);
                 log.info("url : {} ", url);
                 driver.get(url);
-
                 WebElement specificTable = driver.findElement(By.xpath("//*[@id=\"mainsection\"]/div/div/div/div/div[3]/table"));
                 WebElement specificTbody = specificTable.findElement(By.tagName("tbody"));
+
+                WebElement telInfo = driver.findElement(By.xpath("//*[@id=\"pbottom\"]"));
+                String[] temp = telInfo.getText().split("\n")[1].split(" ");
+                tel = temp[7] + "-" + temp[8] + "-" + temp[9];
+                log.info("tel: {}", tel);
+
                 // 읽을 Tbody가 없다면 -> 크롤링 종료
                 if (specificTbody.getText().isEmpty()) {
                     System.out.println("specificTbody is empty");
@@ -139,6 +145,7 @@ public class SongpaScrapService {
                                         .centerName("송파여성문화회관")
                                         .capacity(capacity)
                                         .division("정기 클래스")
+                                        .tel(tel)
                                         .status(true)
                                         .endDate("")
                                         .total(12)
