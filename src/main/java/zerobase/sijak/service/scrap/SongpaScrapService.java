@@ -11,7 +11,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.exception.Code;
@@ -42,7 +41,7 @@ public class SongpaScrapService {
     private final CareerRepository careerRepository;
     private final EducateRepository educateRepository;
 
-    @Scheduled(fixedRate = 10000000)
+    //@Scheduled(fixedRate = 10000000)
     public void scrapSongpa() throws CustomException {
         try {
             String name = "", time = "", href = "", price = "", dayOfWeek = "", location = "", tel = "";
