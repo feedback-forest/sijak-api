@@ -523,6 +523,15 @@ public class LectureService {
         return markerResponseList;
     }
 
+    public List<Integer> getClassIds() {
+
+        List<Lecture> lectures = lectureRepository.findAllByStatusTrue();
+
+        return lectures.stream()
+                .map(Lecture::getId)
+                .toList();
+    }
+
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         // 위도와 경도를 라디안 단위로 변환

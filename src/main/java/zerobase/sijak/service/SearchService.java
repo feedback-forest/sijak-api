@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import zerobase.sijak.dto.CategoryRequest;
 import zerobase.sijak.dto.LectureHomeResponse;
 import zerobase.sijak.dto.SearchRequest;
+import zerobase.sijak.dto.SearchResponse;
 import zerobase.sijak.exception.Code;
 import zerobase.sijak.exception.CustomException;
 import zerobase.sijak.jwt.JwtTokenProvider;
@@ -179,6 +180,19 @@ public class SearchService {
 
             return new SliceImpl<>(lectureHomeResponseList, pageable, searchedCategoryAndLocations.hasNext());
         }
+    }
+
+    public SearchResponse getMatchedKeyword(String keyword) {
+
+        List<Lecture> lectures = lectureRepository.searchNamesByPrefix(keyword);
+
+        List<String> names = lectures.stream()
+                .map(Lecture::getName)
+                .toList();
+
+        return SearchResponse.builder()
+                .names(names)
+                .build();
     }
 
 }

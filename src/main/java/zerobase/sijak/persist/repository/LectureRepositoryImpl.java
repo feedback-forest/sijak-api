@@ -1,6 +1,7 @@
 package zerobase.sijak.persist.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import zerobase.sijak.persist.domain.Lecture;
+import zerobase.sijak.persist.domain.QCategory;
 import zerobase.sijak.persist.domain.QLecture;
 
 import java.util.List;
@@ -41,11 +43,13 @@ public class LectureRepositoryImpl implements LectureQueryDslRepository {
     }
 
     @Override
-    public Slice<Lecture> searchCategoryAndLocation(Pageable pageable, String category, String location) {
+    public Slice<Lecture> searchCategoryAndLocation(Pageable pageable, String categoryName, String location) {
         QLecture lecture = QLecture.lecture;
+        QCategory category = QCategory.category;
 
         List<Lecture> lectures = jpaQueryFactory.selectFrom(lecture)
-                .where(eqCategory(category), eqLocation(location), eqStatusTrue())
+                .innerJoin(category).on(lecture.id.eq(category.lecture.id))
+                .where(eqCategory(categoryName), eqLocation(location), eqStatusTrue())
                 .orderBy(lecture.deadline.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
@@ -61,9 +65,27 @@ public class LectureRepositoryImpl implements LectureQueryDslRepository {
         return new SliceImpl<>(lectures, pageable, hasNext);
     }
 
+    @Override
+    public List<Lecture> searchNamesByPrefix(String keyword) {
+
+        QLecture lecture = QLecture.lecture;
+
+        return jpaQueryFactory.selectFrom(lecture)
+                .where(startsWithKeyword(keyword), eqStatusTrue())
+                .orderBy(lecture.deadline.asc())
+                .limit(9)
+                .fetch();
+    }
+
+    private BooleanExpression startsWithKeyword(String keyword) {
+        if (StringUtils.isBlank(keyword)) return Expressions.FALSE;
+        return QLecture.lecture.name.startsWith(keyword);
+    }
+
     // 제목과 설명에 해당 keyword 가 포함되어있는 강좌를 모두 찾는다.
     private BooleanExpression containsKeyword(String keyword) {
         if (StringUtils.isBlank(keyword)) return null;
+        else if (keyword.contains("무료")) return QLecture.lecture.price.eq("0원");
         return QLecture.lecture.name.contains(keyword)
                 .or(QLecture.lecture.description.contains(keyword));
     }
@@ -77,7 +99,8 @@ public class LectureRepositoryImpl implements LectureQueryDslRepository {
     // 해당 카테고리와 일치하는 강좌를 모두 찾는다.
     private BooleanExpression eqCategory(String category) {
         if (StringUtils.isBlank(category)) return null;
-        return QLecture.lecture.category.eq(category);
+        else if (category.equals("무료")) return QLecture.lecture.price.eq("0원");
+        return QCategory.category.name.eq(category);
     }
 
     // 활성화된 강좌를 모두 찾는다.

@@ -47,4 +47,6 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer>, Lect
             "GROUP BY l.address, l.latitude, l.longitude, l.centerName ")
     List<Object[]> findGroupedLecturesByLocation();
 
+    List<Lecture> findAllByStatusTrue();
+
 }

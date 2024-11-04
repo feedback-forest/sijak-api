@@ -24,6 +24,8 @@ public class QLecture extends EntityPathBase<Lecture> {
 
     public final NumberPath<Integer> capacity = createNumber("capacity", Integer.class);
 
+    public final ListPath<Category, QCategory> categories = this.<Category, QCategory>createList("categories", Category.class, QCategory.class, PathInits.DIRECT2);
+
     public final StringPath category = createString("category");
 
     public final StringPath centerName = createString("centerName");
