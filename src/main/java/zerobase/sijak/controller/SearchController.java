@@ -6,10 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
-import zerobase.sijak.dto.CategoryRequest;
-import zerobase.sijak.dto.CommonResponse;
-import zerobase.sijak.dto.LectureHomeResponse;
-import zerobase.sijak.dto.SearchRequest;
+import zerobase.sijak.dto.*;
 import zerobase.sijak.service.SearchService;
 
 import java.util.HashMap;
@@ -22,6 +19,12 @@ import java.util.Map;
 public class SearchController {
 
     private final SearchService searchService;
+
+    @PostMapping("/")
+    public CommonResponse<?> getMatchedKeyword(@RequestParam String keyword) {
+        SearchResponse searchResponse = searchService.getMatchedKeyword(keyword);
+        return CommonResponse.of(searchResponse);
+    }
 
     @GetMapping("/keyword")
     public CommonResponse<?> searchKeyword(@RequestHeader("Authorization") String token,

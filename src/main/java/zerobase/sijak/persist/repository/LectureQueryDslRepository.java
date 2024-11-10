@@ -5,10 +5,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 import zerobase.sijak.persist.domain.Lecture;
 
+import java.util.List;
+
 @Repository
 public interface LectureQueryDslRepository {
 
     Slice<Lecture> searchKeywordAndLocation(Pageable pageable, String keyword, String location);
 
     Slice<Lecture> searchCategoryAndLocation(Pageable pageable, String category, String location);
+
+    List<Lecture> searchNamesByPrefix(String keyword);
 }
