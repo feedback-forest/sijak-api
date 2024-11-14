@@ -20,7 +20,7 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @PostMapping("/")
+    @PostMapping("")
     public CommonResponse<?> getMatchedKeyword(@RequestParam String keyword) {
         SearchResponse searchResponse = searchService.getMatchedKeyword(keyword);
         return CommonResponse.of(searchResponse);

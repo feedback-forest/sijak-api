@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,5 +50,7 @@ public class PickHomeResponse {
     private String division;
 
     private String price;
+
+    private List<String> categories;
 
 }

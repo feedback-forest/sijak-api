@@ -58,8 +58,6 @@ public class LectureDetailResponse {
     @JsonProperty("heart_count")
     private int heartCount;
 
-    private String category;
-
     private String condition;
 
     private String detail;
@@ -77,10 +75,6 @@ public class LectureDetailResponse {
     @JsonProperty("instructor_name")
     private List<TeacherInfo> instructorName;
 
-//    private String distance;
-//
-//    private String estimatedTime;
-
     private double latitude;
 
     private double longitude;
@@ -88,5 +82,7 @@ public class LectureDetailResponse {
     private List<Image> images;
 
     private Map<Integer, String> plan;
+
+    private List<String> categories;
 
 }

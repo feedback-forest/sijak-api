@@ -3,6 +3,7 @@ package zerobase.sijak.persist.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,5 +49,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer>, Lect
     List<Object[]> findGroupedLecturesByLocation();
 
     List<Lecture> findAllByStatusTrue();
+
+    boolean existsByNameAndCenterNameAndStartDate(String name, String centerName, String startDate);
+
+    @Modifying
+    @Query("UPDATE Lecture l SET l.status = false WHERE l.endDate < :date AND l.status = true AND l.name = :centerName")
+    void updateStatusToFalseForExpiredClasses(String date, String centerName);
+
 
 }
