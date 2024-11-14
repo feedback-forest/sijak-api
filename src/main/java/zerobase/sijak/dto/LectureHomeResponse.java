@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -52,8 +54,8 @@ public class LectureHomeResponse {
 
     private boolean heart;
 
-    private String category;
-
     private String price;
+
+    private List<String> categories;
 
 }

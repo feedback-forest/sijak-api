@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.sijak.exception.Code;
 import zerobase.sijak.exception.CustomException;
 import zerobase.sijak.persist.domain.Lecture;
-import zerobase.sijak.persist.repository.*;
+import zerobase.sijak.persist.repository.LectureRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -31,15 +31,11 @@ import java.util.List;
 public class DigitalYeongdeungpoEduScrap {
 
     private final LectureRepository lectureRepository;
-    private final ImageRepository imageRepository;
-    private final TeacherRepository teacherRepository;
-    private final CareerRepository careerRepository;
-    private final EducateRepository educateRepository;
 
     //@Scheduled(fixedRate = 10000000)
     public void scrapDongjak() throws CustomException {
         try {
-            String name = "", time = "", price = "", href = "", startDate = "", endDate = "", tel = "";
+            String name = "", time = "", price = "", href = "", startDate = "", endDate = "", tel = "1566-2892";
             int capacity = 1, lId = -1, tId = -1, cId = -1;
             LocalDateTime deadline = LocalDateTime.now();
             log.info("deadline : {}", deadline);
@@ -56,11 +52,11 @@ public class DigitalYeongdeungpoEduScrap {
             WebDriver driver = new ChromeDriver(options);
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(120));
-
-            String URL = "https://didong.kr/reservation/date/0/1";
+            String year = String.valueOf(LocalDateTime.now().getYear());
+            String month = String.valueOf(LocalDateTime.now().getMonthValue());
+            String URL = "https://didong.kr/reservation/date/0/1?year=" + year + "&month=" + month;
 
             driver.get(URL);
-
             List<WebElement> trs = driver
                     .findElements(By.cssSelector("#main > section.section8-2.section12-1 > div > div.calendar-board-wrap > div.inner-wrap > div.le-wrap.calendar-wrap > div.calendar-body > table > tbody > tr"));
 
@@ -70,6 +66,7 @@ public class DigitalYeongdeungpoEduScrap {
                     if (StringUtils.isEmpty(td.getText()) || td.getText().contains("예약불가"))
                         continue;
                     log.info(td.getText());
+                    int day = Integer.parseInt(td.getText().split("\n")[0]);
                     WebElement div = td.findElement(By.tagName("div"));
                     ((ChromeDriver) driver).executeScript("arguments[0].click()", div);
                     List<WebElement> lis = driver.findElements(By.cssSelector("#resultWrap > div.scroll-wrap > ul > li"));
@@ -89,21 +86,36 @@ public class DigitalYeongdeungpoEduScrap {
                         time = items[1];
                         int person = Integer.parseInt(items[2]);
                         capacity = Integer.parseInt(items[4]);
-                        startDate = LocalDateTime.now().toString().substring(0, 10);
-                        endDate = LocalDateTime.now().toString().substring(0, 10);
+                        startDate = LocalDateTime
+                                .of(LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), day, 0, 0, 0)
+                                .toString().substring(0, 10);
+                        endDate = startDate;
                         price = "0원";
                         deadline = LocalDateTime.parse(endDate + "T00:00:00", formatter);
+                        String englishDay = LocalDateTime.now().getDayOfWeek().toString();
+                        String dayOfWeek = DayOfWeek.valueOf(englishDay).getKoreanDay();
+                        href = URL;
+                        log.info("week: {}", DayOfWeek.valueOf(englishDay).getKoreanDay());
                         log.info("deadline : {}", deadline);
                         boolean status = person < capacity;
+
+                        expiredClassStatusToFalse(startDate);
+                        if (alreadySavedUserJudge(name, startDate))
+                            continue;
+
+                        log.info("없는 클래스만 저장");
                         Lecture lecture = Lecture.builder()
                                 .name(name)
                                 .time(time)
                                 .price(price)
                                 .total(-1)
                                 .certification("")
-                                .dayOfWeek("")
+                                .dayOfWeek(dayOfWeek)
                                 .target("")
                                 .tel(tel)
+                                .description("")
+                                .location("")
+                                .need("")
                                 .textBookName("")
                                 .textBookPrice("")
                                 .thumbnail("")
@@ -112,13 +124,13 @@ public class DigitalYeongdeungpoEduScrap {
                                 .link(href)
                                 .startDate(startDate)
                                 .endDate(endDate)
-                                .division("정기 클래스")
+                                .division("원데이 클래스")
                                 .view(0)
-                                .status(true)
-                                .latitude(37.513305)
-                                .longitude(126.941528)
-                                .centerName("서울시 50+동작50플러스센터")
-                                .address("서울특별시 동작구 노량진로 140 메가스터디타워 2층")
+                                .status(status)
+                                .latitude(37.491580)
+                                .longitude(126.899705)
+                                .centerName("서울디지털동행플라자 서남센터(영등포)")
+                                .address("서울특별시 영등포구 디지털로37나길 21")
                                 .build();
 
 
@@ -127,9 +139,17 @@ public class DigitalYeongdeungpoEduScrap {
                 }
             }
 
-
         } catch (Exception e) {
             throw new CustomException(Code.CRAWLING_FAILED);
         }
+    }
+
+    private void expiredClassStatusToFalse(String startDate) {
+        lectureRepository.updateStatusToFalseForExpiredClasses(startDate, "서울디지털동행플라자 서남센터(영등포)");
+    }
+
+    private boolean alreadySavedUserJudge(String name, String startDate) {
+        String centerName = "서울디지털동행플라자 서남센터(영등포)";
+        return lectureRepository.existsByNameAndCenterNameAndStartDate(name, centerName, startDate);
     }
 }

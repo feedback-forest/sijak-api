@@ -12,13 +12,11 @@ import zerobase.sijak.dto.*;
 import zerobase.sijak.exception.Code;
 import zerobase.sijak.exception.CustomException;
 import zerobase.sijak.jwt.JwtTokenProvider;
+import zerobase.sijak.persist.domain.Category;
 import zerobase.sijak.persist.domain.Educate;
 import zerobase.sijak.persist.domain.Lecture;
 import zerobase.sijak.persist.domain.Member;
-import zerobase.sijak.persist.repository.EducateRepository;
-import zerobase.sijak.persist.repository.HeartRepository;
-import zerobase.sijak.persist.repository.LectureRepository;
-import zerobase.sijak.persist.repository.MemberRepository;
+import zerobase.sijak.persist.repository.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +39,7 @@ public class LectureService {
     private final double EARTH_RADIUS_KM = 6371.0;
     private final EducateRepository educateRepository;
     private final HeartRepository heartRepository;
+    private final CategoryRepository categoryRepository;
 
     public Slice<LectureHomeResponse> readHome(String token, Pageable pageable) {
 
@@ -52,6 +51,9 @@ public class LectureService {
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -62,6 +64,7 @@ public class LectureService {
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
+                                .categories(categories)
                                 .dayOfWeek(lecture.getDayOfWeek())
                                 .time(lecture.getTime())
                                 .price(lecture.getPrice())
@@ -90,6 +93,9 @@ public class LectureService {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -101,6 +107,7 @@ public class LectureService {
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
+                                .categories(categories)
                                 .price(lecture.getPrice())
                                 .dayOfWeek(lecture.getDayOfWeek())
                                 .target(lecture.getTarget())
@@ -123,6 +130,9 @@ public class LectureService {
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -136,6 +146,7 @@ public class LectureService {
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
                                 .price(lecture.getPrice())
+                                .categories(categories)
                                 .dayOfWeek(lecture.getDayOfWeek())
                                 .longAddress(lecture.getAddress())
                                 .shortAddress(shortAddress)
@@ -161,6 +172,9 @@ public class LectureService {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -174,6 +188,7 @@ public class LectureService {
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .hostedBy(lecture.getCenterName())
+                                .categories(categories)
                                 .status(lecture.isStatus())
                                 .startDate(lecture.getStartDate())
                                 .endDate(lecture.getEndDate())
@@ -235,6 +250,9 @@ public class LectureService {
             }
 
             int heart_count = heartRepository.countHeartByLectureId(lecture.getId());
+            List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                    .map(Category::getName)
+                    .toList();
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -244,6 +262,7 @@ public class LectureService {
                     .time(lecture.getTime())
                     .capacity(lecture.getCapacity())
                     .link(lecture.getLink())
+                    .categories(categories)
                     .period(periodInfoList)
                     .location(lecture.getLocation())
                     .status(lecture.isStatus())
@@ -255,7 +274,7 @@ public class LectureService {
                     .latitude(lecture.getLatitude())
                     .longitude(lecture.getLongitude())
                     .heartCount(heart_count)
-                    .category("미정")
+                    .categories(categories)
                     .dDay(-dDay)
                     .plan(plan)
                     .tel(lecture.getTel())
@@ -318,6 +337,9 @@ public class LectureService {
             }
 
             int heart_count = heartRepository.countHeartByLectureId(lecture.getId());
+            List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                    .map(Category::getName)
+                    .toList();
             LectureDetailResponse lectureDetailResponse = LectureDetailResponse.builder()
                     .id(lecture.getId())
                     .name(lecture.getName())
@@ -343,7 +365,7 @@ public class LectureService {
                     .detail(lecture.getDescription())
                     .certification(lecture.getCertification())
                     .heartCount(heart_count)
-                    .category("미정")
+                    .categories(categories)
                     .textBookName(lecture.getTextBookName())
                     .textBookPrice(lecture.getTextBookPrice())
                     .instructorName(teacherInfoList)
@@ -366,6 +388,9 @@ public class LectureService {
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return PickHomeResponse.builder()
                                 .id(lecture.getId())
                                 .view(lecture.getView())
@@ -379,6 +404,7 @@ public class LectureService {
                                 .endDate(lecture.getEndDate())
                                 .dayOfWeek(lecture.getDayOfWeek())
                                 .status(lecture.isStatus())
+                                .categories(categories)
                                 .price(lecture.getPrice())
                                 .target(lecture.getTarget())
                                 .link(lecture.getLink())
@@ -404,6 +430,9 @@ public class LectureService {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return PickHomeResponse.builder()
                                 .id(lecture.getId())
                                 .view(lecture.getView())
@@ -417,6 +446,7 @@ public class LectureService {
                                 .endDate(lecture.getEndDate())
                                 .dayOfWeek(lecture.getDayOfWeek())
                                 .status(lecture.isStatus())
+                                .categories(categories)
                                 .price(lecture.getPrice())
                                 .target(lecture.getTarget())
                                 .link(lecture.getLink())
@@ -435,6 +465,9 @@ public class LectureService {
                     .map(lecture -> {
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -446,6 +479,7 @@ public class LectureService {
                                 .endDate(lecture.getEndDate())
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
+                                .categories(categories)
                                 .price(lecture.getPrice())
                                 .hostedBy(lecture.getCenterName())
                                 .dayOfWeek(lecture.getDayOfWeek())
@@ -476,6 +510,9 @@ public class LectureService {
                         boolean isHeart = heartService.isHearted(lecture.getId(), member.getId());
                         String[] addressList = lecture.getAddress().split(" ");
                         String shortAddress = addressList[0] + " " + addressList[1];
+                        List<String> categories = categoryRepository.findByLectureId(lecture.getId()).stream()
+                                .map(Category::getName)
+                                .toList();
                         return LectureHomeResponse.builder()
                                 .id(lecture.getId())
                                 .name(lecture.getName())
@@ -488,6 +525,7 @@ public class LectureService {
                                 .latitude(lecture.getLatitude())
                                 .longitude(lecture.getLongitude())
                                 .price(lecture.getPrice())
+                                .categories(categories)
                                 .hostedBy(lecture.getCenterName())
                                 .status(lecture.isStatus())
                                 .startDate(lecture.getStartDate())

@@ -118,6 +118,7 @@ public class Lecture {
     private List<Educate> educates = new ArrayList<>();
 
     @OneToMany(mappedBy = "lecture")
+    @Builder.Default
     private List<Category> categories = new ArrayList<>();
 
 }
