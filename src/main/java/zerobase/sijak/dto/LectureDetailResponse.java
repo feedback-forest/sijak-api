@@ -24,6 +24,8 @@ public class LectureDetailResponse {
 
     private String price;
 
+    private String tel;
+
     @JsonProperty("day_of_week")
     private String dayOfWeek;
 
@@ -86,6 +88,5 @@ public class LectureDetailResponse {
     private List<Image> images;
 
     private Map<Integer, String> plan;
-
 
 }
