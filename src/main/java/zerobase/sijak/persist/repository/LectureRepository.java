@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import zerobase.sijak.persist.domain.Lecture;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LectureRepository extends JpaRepository<Lecture, Integer>, LectureQueryDslRepository {
@@ -52,9 +53,11 @@ public interface LectureRepository extends JpaRepository<Lecture, Integer>, Lect
 
     boolean existsByNameAndCenterNameAndStartDate(String name, String centerName, String startDate);
 
+    Optional<Lecture> findByNameAndCenterNameAndStartDateAndTime(String name, String centerName, String startDate, String time);
+
     @Modifying
-    @Query("UPDATE Lecture l SET l.status = false WHERE l.endDate < :date AND l.status = true AND l.name = :centerName")
-    void updateStatusToFalseForExpiredClasses(String date, String centerName);
+    @Query("UPDATE Lecture l SET l.status = false WHERE l.endDate < :endDate AND l.status = true AND l.centerName = :centerName")
+    void updateStatusToFalseForExpiredClasses(@Param("endDate") String endDate, @Param("centerName") String centerName);
 
 
 }
