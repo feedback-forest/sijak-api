@@ -29,7 +29,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class DigitalYeongdeungpoEduScrap {
+public class DigitalYeongdeungpoExpScrap {
 
     private final LectureRepository lectureRepository;
 
@@ -55,7 +55,7 @@ public class DigitalYeongdeungpoEduScrap {
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(120));
             String year = String.valueOf(LocalDateTime.now().getYear());
             String month = String.valueOf(LocalDateTime.now().getMonthValue());
-            String URL = "https://didong.kr/reservation/date/0/1?year=" + year + "&month=" + month;
+            String URL = "https://didong.kr/reservation/date/0/2?year=" + year + "&month=" + month;
 
             driver.get(URL);
             List<WebElement> trs = driver
